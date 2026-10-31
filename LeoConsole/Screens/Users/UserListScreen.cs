@@ -148,5 +148,3 @@ public sealed class UserListScreen : AsyncScreenBase
         _table.Dispose();
     }
 }
-
-

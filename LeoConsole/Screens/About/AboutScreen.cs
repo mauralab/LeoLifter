@@ -27,4 +27,3 @@ public sealed class AboutScreen : ScreenBase
 
     public override void OnShown() => View.SetFocus();
 }
-

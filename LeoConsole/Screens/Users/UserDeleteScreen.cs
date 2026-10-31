@@ -46,4 +46,3 @@ public sealed class UserDeleteScreen : AsyncScreenBase
 
     public override void OnShown() => View.SetFocus();
 }
-

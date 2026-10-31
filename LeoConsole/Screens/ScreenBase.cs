@@ -65,4 +65,3 @@ public abstract class ScreenBase(ScreenRoute route) : IScreen
 
     public virtual void Dispose() => View.Dispose();
 }
-
