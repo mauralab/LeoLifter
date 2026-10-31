@@ -5,6 +5,18 @@ namespace LeoCore.Managers;
 
 public sealed partial class UserManager
 {
+    public Task<int> CountAsync(string? query = null, CancellationToken cancellationToken = default)
+    {
+        var users = database.Users.AsNoTracking();
+        if (!string.IsNullOrWhiteSpace(query))
+        {
+            var text = query.Trim().ToLowerInvariant();
+            var numeric = long.TryParse(text, out var id);
+            users = users.Where(x => x.Nickname.ToLower().Contains(text) || (numeric && x.Id == id));
+        }
+        return users.CountAsync(cancellationToken);
+    }
+
     public Task<List<User>> ListAsync(int skip = 0, int take = 50, CancellationToken cancellationToken = default)
     {
         ValidatePage(skip, take);

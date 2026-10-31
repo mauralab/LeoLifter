@@ -26,20 +26,7 @@ public sealed partial class UserManager
     public async Task<UserProfile> EditProfileAsync(
         long userId, ProfileDetails details, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(details);
-        if (details.Height.HasValue != details.HeightUnit.HasValue)
-            throw new ArgumentException("Height and height unit must be supplied or cleared together.", nameof(details));
-        if (details.Height is { } height &&
-            (height <= 0 || height > 99999.99m || decimal.Round(height, 2) != height))
-            throw new ArgumentOutOfRangeException(nameof(details), "Height must be positive, at most 99999.99, with at most two decimal places.");
-        if (details.HeightUnit is { } unit && !Enum.IsDefined(unit))
-            throw new ArgumentOutOfRangeException(nameof(details), "Unknown height unit.");
-        if (details.BirthDate > DateOnly.FromDateTime(DateTime.UtcNow))
-            throw new ArgumentException("Birth date cannot be in the future.", nameof(details));
-
-        var country = Normalize(details.Country)?.ToUpperInvariant();
-        if (country is not null && (country.Length != 2 || country.Any(c => c is < 'A' or > 'Z')))
-            throw new ArgumentException("Country must be a two-letter country code, such as UA.", nameof(details));
+        ValidateProfile(details);
 
         await RequireUserAsync(userId, cancellationToken);
         var profile = await database.UserProfiles.SingleOrDefaultAsync(
@@ -54,11 +41,29 @@ public sealed partial class UserManager
         profile.BirthDate = details.BirthDate;
         profile.Height = details.Height;
         profile.HeightUnit = details.HeightUnit;
-        profile.Country = country;
+        profile.Country = Normalize(details.Country)?.ToUpperInvariant();
         profile.City = Normalize(details.City);
         profile.Timezone = Normalize(details.Timezone);
         await database.SaveChangesAsync(cancellationToken);
         return profile;
+    }
+
+    private static void ValidateProfile(ProfileDetails details)
+    {
+        ArgumentNullException.ThrowIfNull(details);
+        if (details.Height.HasValue != details.HeightUnit.HasValue)
+            throw new ArgumentException("Height and height unit must be supplied or cleared together.", nameof(details));
+        if (details.Height is { } height &&
+            (height <= 0 || height > 99999.99m || decimal.Round(height, 2) != height))
+            throw new ArgumentOutOfRangeException(nameof(details), "Height must be positive, at most 99999.99, with at most two decimal places.");
+        if (details.HeightUnit is { } unit && !Enum.IsDefined(unit))
+            throw new ArgumentOutOfRangeException(nameof(details), "Unknown height unit.");
+        if (details.BirthDate > DateOnly.FromDateTime(DateTime.UtcNow))
+            throw new ArgumentException("Birth date cannot be in the future.", nameof(details));
+
+        var country = Normalize(details.Country)?.ToUpperInvariant();
+        if (country is not null && (country.Length != 2 || country.Any(c => c is < 'A' or > 'Z')))
+            throw new ArgumentException("Country must be a two-letter country code, such as UA.", nameof(details));
     }
 
     private async Task RequireUserAsync(long userId, CancellationToken cancellationToken)

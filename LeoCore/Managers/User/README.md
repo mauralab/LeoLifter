@@ -6,7 +6,7 @@ Registered by `services.AddLeoCore()` as scoped services in `LeoCore.Managers`. 
 
 | Entity | Create / initialize | Read | Update | Delete |
 | --- | --- | --- | --- | --- |
-| User | `CreateAsync` | `FindAsync`, `ListAsync`, `FindByUsernameAsync`, `SearchAsync`, `FindByTelegramIdAsync` | `EditAsync` | `DeleteAsync` |
+| User | `CreateAsync` | `FindAsync`, `ListAsync`, `CountAsync`, `FindByUsernameAsync`, `SearchAsync`, `FindByTelegramIdAsync` | `EditAsync` | `DeleteAsync` |
 | Profile | `InitializeProfileAsync` | `GetProfileAsync` | `EditProfileAsync` | `DeleteProfileAsync` |
 | Settings | `InitializeSettingsAsync` | `GetSettingsAsync` | `EditSettingsAsync` | `DeleteSettingsAsync` |
 | Weight measurement | `AddWeightAsync` | `GetWeightAsync`, `ListWeightsAsync` | `EditWeightAsync` | `DeleteWeightAsync` |
@@ -46,6 +46,10 @@ var access = scope.ServiceProvider.GetRequiredService<AccessManager>();
 
 In an application class, receive these managers through constructor injection. Use one scope/context for each unit of work; do not run concurrent calls on that context. Write methods save immediately, including any other pending changes on the shared context.
 
+## Combined account editing
+
+`SaveAccountAsync(long? userId, string nickname, ProfileDetails profile, SettingsDetails settings, CancellationToken)` creates an account when `userId` is null, otherwise edits an existing account. It validates all details before applying changes and saves User, UserProfile and UserSettings together in one SaveChanges call. Missing profile/settings records are created. It returns the user ID. This is used by the console's combined constructor; collection records such as weights/sessions are managed separately.
+
 ## Accounts and search
 
 ```csharp
@@ -61,6 +65,7 @@ await users.EditAsync(created.Id, "New nickname");
 - Nicknames are trimmed, nonblank, at most 100 characters and not unique. There is no separate Username column.
 - FindByUsernameAsync is case-insensitive exact nickname matching and returns a list. SearchAsync matches a nickname substring or an exact ID if its input is numeric. PostgreSQL collation controls case folding.
 - FindAsync is an exact positive-ID lookup and returns null if the user is absent. User queries include profile/settings, not credentials or sessions. Lists/searches order by ID ascending.
+- CountAsync accepts the same optional substring/numeric-ID filter as SearchAsync and provides totals for server-side pagination.
 - EditAsync changes only the nickname. IDs and creation timestamps are not editable through these methods.
 
 ## Profiles and preferences
