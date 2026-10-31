@@ -1,5 +1,6 @@
 using LeoDatabase;
-using LeoDatabase.Context;
+using LeoCore;
+using LeoCore.Managers;
 using Microsoft.Extensions.DependencyInjection;
 
 var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__LeoDatabase")
@@ -13,6 +14,7 @@ if (string.IsNullOrWhiteSpace(connectionString))
 
 var services = new ServiceCollection();
 services.AddLeoDatabase(connectionString);
+services.AddLeoCore();
 
 await using var provider = services.BuildServiceProvider(new ServiceProviderOptions
 {
@@ -20,5 +22,7 @@ await using var provider = services.BuildServiceProvider(new ServiceProviderOpti
     ValidateOnBuild = true
 });
 await using var scope = provider.CreateAsyncScope();
-var database = scope.ServiceProvider.GetRequiredService<LeoDbContext>();
-Console.WriteLine($"LeoDatabase configured with {database.Model.GetEntityTypes().Count()} models.");
+var users = scope.ServiceProvider.GetRequiredService<UserManager>();
+Console.WriteLine("LeoCore configured. UserManager is ready.");
+// Example: var user = await users.CreateAsync("Leo");
+// Example: var user = await users.FindAsync(1);
