@@ -1,71 +1,97 @@
 "use client"
 
-import * as React from "react"
-import { ThemeProvider as NextThemesProvider, useTheme } from "next-themes"
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useSyncExternalStore,
+} from "react"
 
-function ThemeProvider({
-  children,
-  ...props
-}: React.ComponentProps<typeof NextThemesProvider>) {
-  return (
-    <NextThemesProvider
-      attribute="class"
-      defaultTheme="system"
-      enableSystem
-      disableTransitionOnChange
-      {...props}
-    >
-      <ThemeHotkey />
-      {children}
-    </NextThemesProvider>
-  )
-}
+export type ThemePreference = "light" | "dark" | "system"
+type ResolvedTheme = "light" | "dark"
+const changeEvent = "leolifter:theme-change"
+let fallbackPreference: ThemePreference = "system"
 
-function isTypingTarget(target: EventTarget | null) {
-  if (!(target instanceof HTMLElement)) {
-    return false
+function getPreference(): ThemePreference {
+  try {
+    const saved = localStorage.getItem("theme")
+    return saved === "light" || saved === "dark" ? saved : "system"
+  } catch {
+    return fallbackPreference
   }
+}
 
+function getSnapshot(): ResolvedTheme {
+  const preference = getPreference()
+  return preference === "system"
+    ? window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light"
+    : preference
+}
+
+function applyTheme() {
+  const theme = getSnapshot()
+  document.documentElement.classList.remove("light", "dark")
+  document.documentElement.classList.add(theme)
+  document.documentElement.style.colorScheme = theme
+}
+
+function subscribe(notify: () => void) {
+  const update = () => {
+    applyTheme()
+    notify()
+  }
+  const onStorage = (event: StorageEvent) => {
+    if (event.key === "theme" || event.key === null) update()
+  }
+  const media = window.matchMedia("(prefers-color-scheme: dark)")
+  window.addEventListener(changeEvent, update)
+  window.addEventListener("storage", onStorage)
+  media.addEventListener("change", update)
+  return () => {
+    window.removeEventListener(changeEvent, update)
+    window.removeEventListener("storage", onStorage)
+    media.removeEventListener("change", update)
+  }
+}
+
+function setTheme(theme: ThemePreference) {
+  fallbackPreference = theme
+  try {
+    localStorage.setItem("theme", theme)
+  } catch {
+    /* Private browsing can block storage. */
+  }
+  applyTheme()
+  window.dispatchEvent(new Event(changeEvent))
+}
+
+const ThemeContext = createContext<{
+  resolvedTheme: ResolvedTheme
+  setTheme: typeof setTheme
+} | null>(null)
+const getServerSnapshot = (): ResolvedTheme => "light"
+
+/** Browser preference store only; rendering this provider never inserts a script. */
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const resolvedTheme = useSyncExternalStore(
+    subscribe,
+    getSnapshot,
+    getServerSnapshot
+  )
+  useEffect(() => {
+    applyTheme()
+  }, [resolvedTheme])
   return (
-    target.isContentEditable ||
-    target.tagName === "INPUT" ||
-    target.tagName === "TEXTAREA" ||
-    target.tagName === "SELECT"
+    <ThemeContext.Provider value={{ resolvedTheme, setTheme }}>
+      {children}
+    </ThemeContext.Provider>
   )
 }
 
-function ThemeHotkey() {
-  const { resolvedTheme, setTheme } = useTheme()
-
-  React.useEffect(() => {
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.defaultPrevented || event.repeat) {
-        return
-      }
-
-      if (event.metaKey || event.ctrlKey || event.altKey) {
-        return
-      }
-
-      if (event.key.toLowerCase() !== "d") {
-        return
-      }
-
-      if (isTypingTarget(event.target)) {
-        return
-      }
-
-      setTheme(resolvedTheme === "dark" ? "light" : "dark")
-    }
-
-    window.addEventListener("keydown", onKeyDown)
-
-    return () => {
-      window.removeEventListener("keydown", onKeyDown)
-    }
-  }, [resolvedTheme, setTheme])
-
-  return null
+export function useTheme() {
+  const context = useContext(ThemeContext)
+  if (!context) throw new Error("useTheme requires ThemeProvider")
+  return context
 }
-
-export { ThemeProvider }
