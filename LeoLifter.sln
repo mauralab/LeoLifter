@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeoDatabase", "LeoDatabase\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeoCore", "LeoCore\LeoCore.csproj", "{9FACA0C1-3430-42CC-87A1-95149860B0A8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeoBot", "LeoBot\LeoBot.csproj", "{AC7D9BDB-F281-4323-8766-2075D72A40B5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{9FACA0C1-3430-42CC-87A1-95149860B0A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9FACA0C1-3430-42CC-87A1-95149860B0A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9FACA0C1-3430-42CC-87A1-95149860B0A8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC7D9BDB-F281-4323-8766-2075D72A40B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC7D9BDB-F281-4323-8766-2075D72A40B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC7D9BDB-F281-4323-8766-2075D72A40B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC7D9BDB-F281-4323-8766-2075D72A40B5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
