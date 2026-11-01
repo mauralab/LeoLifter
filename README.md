@@ -1,6 +1,6 @@
 # LeoLifter Web
 
-Responsive public landing page for the planned workout-program web application. No login, registration, Telegram SDK, database calls or tracking is enabled.
+Responsive public landing page plus Telegram-linked sign-in and a minimal authenticated profile. Workout-program screens and the Telegram Mini App are still future work. The public landing page makes no database calls.
 
 ## Run
 
@@ -9,7 +9,7 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:3000. `/` redirects to `/en`.
+Open http://127.0.0.1:3000. `/` redirects to `/en`.
 
 ## Languages
 
@@ -30,7 +30,7 @@ The workout preview is sample data only. Day selection, exercise completion and 
 
 ## Future application direction
 
-Users should be able to create and follow workout programs from the browser and a Telegram Mini App. Keep shared responsive components and locale dictionaries reusable by both entry points. The future Telegram bot and Telegram-linked authentication are not implemented here. Use an internal user ID with a linked Telegram ID; future Mini App identity must be verified server-side before creating/linking accounts. Never treat a client-supplied Telegram ID as proof of identity. Backend ownership and auth/schema integration remain separate implementation tasks.
+Users should be able to create and follow workout programs from the browser and a Telegram Mini App. Keep shared responsive components and locale dictionaries reusable by both entry points. LeoBot can now sign users into this web app with verified, short-lived links. The full Mini App, web-initiated Telegram approval flow and workout notifications remain future work. Internal user IDs and linked Telegram IDs remain separate. Never treat raw URL IDs or usernames as proof of identity.
 
 ## Checks
 
@@ -45,3 +45,40 @@ When routes change, regenerate Next.js types with `npx next typegen`. Old `.next
 ## Theme initialization
 
 The theme provider uses a browser preference store rather than rendering an inline script. `public/theme-init.js` is an external async React script resource loaded by the localized root layout. It applies the same saved/system preference before hydration when available; the provider also initializes it after hydration and observes system and cross-tab preference changes. Keep the bootstrap logic aligned with the provider. This avoids React development warnings from inline scripts during client layout mounts.
+
+## Telegram authentication
+
+`/[locale]/auth` is a blank hand-off page opened from a personal bot link. It verifies the ID, username, private chat ID, issue time, nonce and SHA-256 HMAC signature shared with LeoBot. Links expire after five minutes and are single-use. Initial GETs and Telegram link previews never consume a link or create an account: the actual browser submits a bounded, same-origin POST to `/api/auth/telegram`.
+
+The server uses the existing PostgreSQL `users`, `user_telegram`, `user_profiles`, `user_settings` and `user_sessions` tables. New users get `nickname = tg_username`; when Telegram provides no username the fallback is `telegram_<id>`. Telegram ID is the account identity; usernames are never used to merge accounts. Existing nicknames/profile/preferences are preserved. Chat ID and the Telegram-to-user mapping are saved, and missing personal records are initialized.
+
+Nonce consumption, sign-up/linking and session creation share one transaction. Concurrent sign-ups for one Telegram ID are serialized. A new `telegram_login_links` table records only hashed nonces; failed transactions do not consume links. Existing tables are not altered. This additive migration was applied to the existing local database during setup.
+
+Authentication issues a 15-minute signed access JWT and a 30-day random refresh token. Cookies are HTTP-only, SameSite=Lax and Secure on HTTPS; refresh cookies are scoped to `/api/auth`. Only SHA-256 uppercase-hex refresh-token hashes are stored, matching LeoCore's format. The profile validates both the access token and the database session and displays only the nickname. Missing/expired access cookies trigger a same-origin refresh POST; refresh tokens rotate atomically. `/api/auth/logout` revokes the session and clears cookies. Refresh expiry is fixed rather than extended indefinitely.
+
+### Local setup
+
+Ignored `.env.local` and `../LeoBot/appsettings.Local.json` were generated using the existing Rider database connection and fresh matching signing secrets. Do not commit either file. Restart the web app and LeoBot after configuration changes, then send `/start` for a new personal link.
+
+For another checkout, copy `.env.example` to `.env.local` and supply:
+
+```text
+DATABASE_URL=<PostgreSQL URL for the existing LeoDatabase database>
+APP_ORIGIN=http://127.0.0.1:3000
+TELEGRAM_AUTH_SECRET=<random shared secret of at least 32 UTF-8 bytes>
+SESSION_SECRET=<different random signing secret of at least 32 UTF-8 bytes>
+```
+
+Set LeoBot `Telegram__AuthLinkSecret` to exactly TELEGRAM_AUTH_SECRET and `Telegram__WebAuthUrl` to `APP_ORIGIN/en/auth`. Use HTTPS for a public deployment. HTTP is only accepted for loopback development. A phone opening localhost cannot reach the PC; use a public HTTPS address/tunnel and change both origins together for phone testing. The app origin must have no trailing slash.
+
+Initialize the additive auth table once per database:
+
+```sh
+npm run db:auth:migrate
+```
+
+The Drizzle schema here maps a subset of existing EF Core tables for queries. Do not run blanket Drizzle push/generation against the shared database using this partial schema: EF Core remains the owner of the existing application schema.
+
+Login URLs are bearer credentials: never share them or log complete query strings. Development auth request logging is disabled, referrers carry only an origin, and browser history loses the query on hand-off. Configure any production proxy/access logs to redact auth query strings too. Expired consumed-link rows can be deleted once their expiry has passed; signature expiry still prevents replay. No cleanup scheduler is enabled yet.
+
+End-to-end validation used a separate PostgreSQL 18 cluster with the exact EF Core schema and a real browser: .NET-to-TypeScript signatures, new/returning users, Telegram mapping, cookie/session state, replay/tamper/expiry rejection, parallel sign-ups, missing usernames, refresh rotation, logout, and transaction rollback. Existing user records were not used as test data.
