@@ -65,13 +65,11 @@ export async function signInTelegram(link: TelegramLink, locale: string) {
         })
         .returning({ id: users.id })
       userId = created.id
-      await tx
-        .insert(userTelegram)
-        .values({
-          userId,
-          telegramId: BigInt(link.tg_id),
-          chatId: BigInt(link.chat_id),
-        })
+      await tx.insert(userTelegram).values({
+        userId,
+        telegramId: BigInt(link.tg_id),
+        chatId: BigInt(link.chat_id),
+      })
     } else {
       await tx
         .update(userTelegram)
@@ -146,7 +144,11 @@ export async function findSessionUser(userId: string, sessionId: string) {
   if (!/^[1-9][0-9]*$/.test(userId) || !/^[1-9][0-9]*$/.test(sessionId))
     return null
   const [user] = await getDb()
-    .select({ nickname: users.nickname })
+    .select({
+      nickname: users.nickname,
+      userId: users.id,
+      sessionId: userSessions.id,
+    })
     .from(users)
     .innerJoin(userSessions, eq(users.id, userSessions.userId))
     .where(
@@ -158,5 +160,11 @@ export async function findSessionUser(userId: string, sessionId: string) {
       )
     )
     .limit(1)
-  return user ?? null
+  return user
+    ? {
+        nickname: user.nickname,
+        userId: user.userId.toString(),
+        sessionId: user.sessionId.toString(),
+      }
+    : null
 }

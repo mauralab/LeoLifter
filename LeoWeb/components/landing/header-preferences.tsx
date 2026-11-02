@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { useTheme } from "@/components/theme-provider"
 import { ChevronDown, Moon, Sun } from "lucide-react"
 import {
@@ -79,6 +79,7 @@ export function HeaderPreferences({
 }) {
   const [open, setOpen] = useState(false)
   const router = useRouter()
+  const pathname = usePathname()
   const { resolvedTheme, setTheme } = useTheme()
   return (
     <div className="header-preferences">
@@ -107,7 +108,7 @@ export function HeaderPreferences({
             onValueChange={(value) => {
               if (isLocale(value)) {
                 setOpen(false)
-                router.push(`/${value}`)
+                router.push(pathname.replace(/^\/[^/]+/, `/${value}`))
               }
             }}
           >

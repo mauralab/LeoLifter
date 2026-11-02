@@ -1,5 +1,5 @@
 import nextEnv from "@next/env"
-import { readFile } from "node:fs/promises"
+import { readFile, readdir } from "node:fs/promises"
 import pg from "pg"
 nextEnv.loadEnvConfig(process.cwd())
 if (!process.env.DATABASE_URL)
@@ -10,18 +10,15 @@ const client = new pg.Client({ connectionString: process.env.DATABASE_URL })
 try {
   await client.connect()
   await client.query("BEGIN")
-  await client.query(
-    await readFile(
-      new URL(
-        "../db/migrations/0001_telegram_login_links.sql",
-        import.meta.url
-      ),
-      "utf8"
-    )
-  )
+  const directory = new URL("../db/migrations/", import.meta.url)
+  const migrations = (await readdir(directory))
+    .filter((name) => /^\d+_.*\.sql$/.test(name))
+    .sort()
+  for (const name of migrations)
+    await client.query(await readFile(new URL(name, directory), "utf8"))
   await client.query("COMMIT")
   console.log(
-    "Applied the additive Telegram login-link migration. Existing tables were not changed."
+    "Applied additive authentication migrations. Existing application tables were not changed."
   )
 } catch {
   await client.query("ROLLBACK").catch(() => {})

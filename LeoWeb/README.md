@@ -1,6 +1,6 @@
 # LeoLifter Web
 
-Responsive public landing page plus Telegram-linked sign-in and a minimal authenticated profile. Workout-program screens and the Telegram Mini App are still future work. The public landing page makes no database calls.
+Responsive public landing page plus Telegram-linked sign-in and an authenticated account workspace. Workout-program screens and the Telegram Mini App are still future work. The public landing page makes no database calls.
 
 ## Run
 
@@ -30,7 +30,7 @@ The workout preview is sample data only. Day selection, exercise completion and 
 
 ## Future application direction
 
-Users should be able to create and follow workout programs from the browser and a Telegram Mini App. Keep shared responsive components and locale dictionaries reusable by both entry points. LeoBot can now sign users into this web app with verified, short-lived links. The full Mini App, web-initiated Telegram approval flow and workout notifications remain future work. Internal user IDs and linked Telegram IDs remain separate. Never treat raw URL IDs or usernames as proof of identity.
+Users should be able to create and follow workout programs from the browser and a Telegram Mini App. Keep shared responsive components and locale dictionaries reusable by both entry points. LeoBot can now sign users into this web app with verified, short-lived links. The full Mini App and workout notifications remain future work; nickname/password sign-in with Telegram approval is implemented. Internal user IDs and linked Telegram IDs remain separate. Never treat raw URL IDs or usernames as proof of identity.
 
 ## Checks
 
@@ -54,7 +54,7 @@ The server uses the existing PostgreSQL `users`, `user_telegram`, `user_profiles
 
 Nonce consumption, sign-up/linking and session creation share one transaction. Concurrent sign-ups for one Telegram ID are serialized. A new `telegram_login_links` table records only hashed nonces; failed transactions do not consume links. Existing tables are not altered. This additive migration was applied to the existing local database during setup.
 
-Authentication issues a 15-minute signed access JWT and a 30-day random refresh token. Cookies are HTTP-only, SameSite=Lax and Secure on HTTPS; refresh cookies are scoped to `/api/auth`. Only SHA-256 uppercase-hex refresh-token hashes are stored, matching LeoCore's format. The profile validates both the access token and the database session and displays only the nickname. Missing/expired access cookies trigger a same-origin refresh POST; refresh tokens rotate atomically. `/api/auth/logout` revokes the session and clears cookies. Refresh expiry is fixed rather than extended indefinitely.
+Authentication issues a 15-minute signed access JWT and a 30-day random refresh token. Cookies are HTTP-only, SameSite=Lax and Secure on HTTPS; refresh cookies are scoped to `/api/auth`. Only SHA-256 uppercase-hex refresh-token hashes are stored, matching LeoCore's format. The profile validates both the access token and the database session before displaying the account workspace. Missing/expired access cookies trigger a same-origin refresh POST; refresh tokens rotate atomically. `/api/auth/logout` revokes the session and clears cookies. Refresh expiry is fixed rather than extended indefinitely.
 
 ### Local setup
 
@@ -82,3 +82,44 @@ The Drizzle schema here maps a subset of existing EF Core tables for queries. Do
 Login URLs are bearer credentials: never share them or log complete query strings. Development auth request logging is disabled, referrers carry only an origin, and browser history loses the query on hand-off. Configure any production proxy/access logs to redact auth query strings too. Expired consumed-link rows can be deleted once their expiry has passed; signature expiry still prevents replay. No cleanup scheduler is enabled yet.
 
 End-to-end validation used a separate PostgreSQL 18 cluster with the exact EF Core schema and a real browser: .NET-to-TypeScript signatures, new/returning users, Telegram mapping, cookie/session state, replay/tamper/expiry rejection, parallel sign-ups, missing usernames, refresh rotation, logout, and transaction rollback. Existing user records were not used as test data.
+
+## Profile workspace
+
+`/[locale]/profile` has four responsive sections, translated into English, Ukrainian, Norwegian Bokmål, German and Polish:
+
+- **Profile:** nickname, birthday, sex, height/unit, two-letter country code, city and IANA time zone. Optional fields can be cleared. Height units default to the saved length preference (cm initially); clearing height also clears its stored unit, and an existing height retains its own unit when preferences change. The nickname/profile save is atomic.
+- **Settings:** language, weight unit and length unit. Saving a language changes the profile URL to that locale; the header picker also keeps you on the current page.
+- **Password:** set an initial password or change it after verifying the current password. New passwords require 12–128 characters and confirmation. Hashes use ASP.NET Identity V3 PBKDF2-SHA512, compatible with LeoCore; older Identity hashes can be verified too. Setting/changing a password revokes other sessions while keeping the current session. Nickname/password sign-in requires a second approval in Telegram; direct Telegram sign-in also remains available.
+- **Sessions:** ten non-revoked records per page, with device label, sign-in/update/expiry timestamps, status and current-device marker. Revoke one session, sign out other sessions, or sign out the current device. Timestamps use the saved time zone, falling back to UTC. Session updates indicate token/security changes rather than general browsing activity.
+
+The server page loads safe DTOs through `lib/profile/store.ts`. Client forms in `components/profile/profile-workspace.tsx` POST bounded URL-encoded data to `/api/profile`. Every mutation checks the request origin and verified active session, derives ownership from that identity, and locks/rechecks the user/session before writing. Session lists never expose token hashes. Existing database tables are mapped in Drizzle; no new migration is required for this feature.
+
+Password operations are limited to five attempts per account per 15 minutes in each process. Use a shared limiter before scaling to multiple server processes. Validation and expected errors are localized; database exceptions and credentials are not sent to the client.
+
+Validation used an isolated PostgreSQL fixture and browser automation for persistence, invalid/oversized/duplicate inputs, CSRF and anonymous rejection, password setup/change and .NET hash interoperability, cross-user session protection, pagination, individual/bulk/current-session revocation, and mobile layouts in all five languages. Production build, lint and type checks also pass.
+
+### Refresh and local addresses
+
+`proxy.ts` redirects local GET/HEAD page/auth visits from localhost or ::1 to the configured loopback APP_ORIGIN, keeping sign-in and refresh cookies on one host. `skipProxyUrlNormalize` preserves the absolute redirect because Next.js otherwise normalizes loopback IPs to localhost. POST origin checks remain strict; unrelated hosts and origins are never trusted through this convenience redirect.
+
+Opening `/api/auth/refresh` in the browser now redirects to the localized profile, where the existing browser hand-off renews an expired/missing access cookie using POST. GET itself never rotates a token. A valid access cookie can open the profile immediately. Cookies originally created on a different host are not transferred; request a new bot sign-in link if no session exists on the configured host.
+
+The landing header includes a localized profile link on desktop and mobile. Revoking a session removes it from the profile list/count/pagination while retaining its database record for history.
+
+## Nickname/password sign-in with Telegram approval
+
+Open `/{locale}/login` or use **Sign in** on the landing page. Enter a nickname, then the account password, then wait on the confirmation page. LeoBot sends a private **Is this you?** message with **Yes / No**, a request code matching the browser, device category and UTC request time. Yes signs in the initiating browser; No blocks only that attempt. Existing sessions are unaffected. Requests expire after five minutes and can be cancelled in the browser; reloading the waiting page resumes the same request.
+
+Requirements: set a password from Profile, link the account to Telegram through the existing bot sign-in flow, keep LeoBot running, and configure its `ConnectionStrings__LeoDatabase` to the same PostgreSQL database used by LeoWeb. The ignored local bot configuration has been populated for this machine. The web app never needs the bot token or a public webhook. Restart both applications after updating.
+
+`npm run db:auth:migrate` now applies the ordered, idempotent additive auth SQL files, including `0002_password_login_approval.sql` (already applied locally). It adds `password_login_requests` and `auth_rate_limits`; it does not alter application tables or impose a nickname uniqueness constraint. Expired request rows and old rate-limit buckets can be removed later; no cleanup schedule is enabled.
+
+Nicknames are matched case-insensitively after trimming, and must resolve to exactly one account. Ambiguous nicknames, incorrect passwords, missing passwords and missing Telegram links use the same failure response. A user with an ambiguous nickname can enter via Telegram and change their nickname in Profile. There are ten credential attempts per normalized nickname per 15 minutes, enforced atomically in PostgreSQL across processes. Apply edge/network abuse limits as part of public deployment too.
+
+`lib/auth/password-login.ts` verifies Identity-compatible hashes, persists a request after successful verification, and redeems an approved request once. A 256-bit browser secret is kept in an HTTP-only, SameSite=Strict cookie scoped to `/api/auth/password`; only its hash is stored. Knowing the request ID or seeing its reference code is insufficient to redeem it. No access/refresh tokens are issued before approval. Redemption rechecks the credential fingerprint and Telegram mapping and creates the normal 15-minute access / 30-day refresh session in one transaction. Password or Telegram-link changes invalidate outstanding approvals.
+
+`POST /api/auth/password` starts a request; `POST /api/auth/password/status` polls/redeems it or cancels with `action=cancel`. Both enforce trusted origin and bounded form inputs. No state-changing GET endpoint exists. The status response never exposes passwords, stored hashes or refresh tokens. Missing/expired refresh sessions now lead to the login page; `/start` sign-in remains available.
+
+LeoBot's `PasswordApprovalWorker` claims pending notifications with a short retry lease (`FOR UPDATE SKIP LOCKED`), sends localized buttons, and records Telegram's message ID. Callback decisions require the stored Telegram sender, private chat, message ID, pending state and unexpired request; replay cannot change a decision. Sending errors use sanitized logs and never bypass approval. Delivery retries are bounded; if delivery fails or the bot is offline, the attempt eventually expires.
+
+Validation used isolated PostgreSQL, browser automation and a stub Telegram HTTP transport, including both decisions, expiration, cancellation, replays, wrong sender/chat/message, group callbacks, another browser's forged proof, concurrent redemption, password-change invalidation, ambiguous names, CSRF, database-backed throttling and responsive layouts in all five locales. No real Telegram messages were sent during tests.

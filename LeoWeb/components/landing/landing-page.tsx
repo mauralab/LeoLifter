@@ -192,7 +192,24 @@ export function LandingPage({
           <a href="#preview">{d.navPreview}</a>
           <a href="#roadmap">{d.navRoadmap}</a>
         </nav>
-        <HeaderPreferences locale={locale} copy={d} />
+        <div className="landing-account-actions">
+          <Link
+            className="landing-signin-link"
+            href={`/${locale}/login`}
+            prefetch={false}
+          >
+            {d.login.signIn}
+          </Link>
+          <Link
+            className="landing-profile-link"
+            href={`/${locale}/profile`}
+            prefetch={false}
+          >
+            <span aria-hidden="true">↗</span>
+            <span>{d.account.goToProfile}</span>
+          </Link>
+          <HeaderPreferences locale={locale} copy={d} />
+        </div>
       </header>
       <main id="main">
         <section className="hero shell" aria-labelledby="hero-title">

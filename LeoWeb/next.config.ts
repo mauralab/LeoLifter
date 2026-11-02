@@ -1,6 +1,8 @@
 import type { NextConfig } from "next"
 
 const nextConfig: NextConfig = {
+  // Preserve loopback host redirects instead of normalizing them to relative URLs.
+  skipProxyUrlNormalize: true,
   allowedDevOrigins: ["127.0.0.1"],
   logging: { incomingRequests: { ignore: [/\/auth(?:\/|\?|$)/] } },
   async headers() {
@@ -11,6 +13,14 @@ const nextConfig: NextConfig = {
           { key: "Referrer-Policy", value: "strict-origin" },
           { key: "Cache-Control", value: "private, no-store" },
           { key: "X-Robots-Tag", value: "noindex, nofollow" },
+          { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
+        ],
+      },
+      {
+        source: "/:locale/login",
+        headers: [
+          { key: "Cache-Control", value: "private, no-store" },
+          { key: "Referrer-Policy", value: "strict-origin" },
           { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
         ],
       },

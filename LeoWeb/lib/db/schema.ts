@@ -1,5 +1,8 @@
 import {
   bigint,
+  integer,
+  date,
+  numeric,
   pgEnum,
   pgTable,
   text,
@@ -30,16 +33,23 @@ export const userTelegram = pgTable("user_telegram", {
   chatId: bigint("chat_id", { mode: "bigint" }).notNull(),
   telegramId: bigint("telegram_id", { mode: "bigint" }).notNull().unique(),
 })
+const weightUnit = pgEnum("weight_unit", ["kg", "lb"])
+const lengthUnit = pgEnum("length_unit", ["cm", "m", "in", "ft"])
 export const userProfiles = pgTable("user_profiles", {
   userId: bigint("user_id", { mode: "bigint" })
     .primaryKey()
     .references(() => users.id, { onDelete: "cascade" }),
+  sex: text("sex"),
+  birthDate: date("birth_date"),
+  height: numeric("height", { precision: 7, scale: 2 }),
+  heightUnit: lengthUnit("height_unit"),
+  country: varchar("country", { length: 2 }),
+  city: text("city"),
+  timezone: text("timezone"),
   updatedAt: timestamp("updated_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
 })
-const weightUnit = pgEnum("weight_unit", ["kg", "lb"])
-const lengthUnit = pgEnum("length_unit", ["cm", "m", "in", "ft"])
 export const userSettings = pgTable("user_settings", {
   userId: bigint("user_id", { mode: "bigint" })
     .primaryKey()
@@ -71,4 +81,41 @@ export const telegramLoginLinks = pgTable("telegram_login_links", {
   consumedAt: timestamp("consumed_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
+})
+
+export const userPasswords = pgTable("user_passwords", {
+  userId: bigint("user_id", { mode: "bigint" })
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  passwordHash: text("password_hash").notNull(),
+})
+
+export const passwordLoginRequests = pgTable("password_login_requests", {
+  id: text("id").primaryKey(),
+  userId: bigint("user_id", { mode: "bigint" })
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  browserTokenHash: text("browser_token_hash").notNull().unique(),
+  credentialHash: text("credential_hash").notNull(),
+  telegramId: bigint("telegram_id", { mode: "bigint" }).notNull(),
+  chatId: bigint("chat_id", { mode: "bigint" }).notNull(),
+  locale: text("locale").notNull(),
+  device: text("device").notNull(),
+  status: text("status").notNull().default("pending"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  decidedAt: timestamp("decided_at", { withTimezone: true }),
+  notifiedAt: timestamp("notified_at", { withTimezone: true }),
+  messageId: bigint("message_id", { mode: "bigint" }),
+  sendAttempts: integer("send_attempts").notNull().default(0),
+  lastSendAttemptAt: timestamp("last_send_attempt_at", { withTimezone: true }),
+})
+export const authRateLimits = pgTable("auth_rate_limits", {
+  keyHash: text("key_hash").primaryKey(),
+  windowStart: timestamp("window_start", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  attempts: integer("attempts").notNull(),
 })

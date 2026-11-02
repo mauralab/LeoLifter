@@ -1,6 +1,6 @@
 # LeoLifter architecture and feature development guide
 
-Current architecture: 1 November 2026.
+Current architecture: 2 November 2026.
 Project: `C:\Users\GLaDOS\RiderProjects\LeoConsole`
 Solution: `LeoLifter.sln`
 Repository: https://github.com/mauralab/LeoLifter
@@ -116,7 +116,7 @@ Program builds the generic host and registers services. BotWorker checks bot ide
 
 TelegramLoginLinkFactory receives identity from the actual private Telegram update. It signs tg_id, tg_username, chat_id, issue time and a random nonce using the shared secret. The user opens that link in LeoWeb.
 
-To add a command, route it in BotUpdateHandler, put presentation in a dedicated message factory/service, and register dependencies through DI. Keep database/business work out of the transport loop. The bot currently does not call LeoCore or write the database.
+To add a command, route it in BotUpdateHandler, put presentation in a dedicated message factory/service, and register dependencies through DI. Keep database/business work out of the transport loop. The bot does not call LeoCore. Its password approval worker reads/writes the shared authentication queue using Npgsql, and validates private Telegram callback identities before recording Yes/No decisions.
 
 Use a transport stub for automated tests. Do not log raw Telegram exceptions, tokens or signed login URLs. TelegramErrorDiagnostics maps known failures to fixed safe hints. Only one polling process should run for a bot token; an active webhook conflicts with this polling setup.
 
@@ -140,7 +140,8 @@ Important locations:
 | `lib/auth/session.ts` | JWTs, cookie options, trusted origin and currentUser |
 | `lib/auth/http.ts` | Bounded form parsing and safe auth responses |
 | `app/api/auth/` | Login, refresh and logout POST handlers |
-| `app/[locale]/profile/page.tsx` | Minimal authenticated nickname page |
+| `lib/profile/`, `app/api/profile/`, `components/profile/` | Profile validation, transactional saves, Identity-compatible password setup/change and paginated owned-session management |
+| `app/[locale]/profile/page.tsx` | Authenticated profile, settings, password and sessions workspace |
 | `next.config.ts` | Redirect, private/auth headers, redacted dev logs and allowed dev origins |
 
 The installed Next.js has version-specific behavior. Read `LeoWeb/AGENTS.md` and the relevant bundled docs in `node_modules/next/dist/docs/` before changing routing/configuration.
@@ -152,13 +153,13 @@ The installed Next.js has version-specific behavior. Read `LeoWeb/AGENTS.md` and
 3. `/{locale}/auth` verifies the link on GET, then the browser submits a same-origin POST to `/api/auth/telegram`. GET/link previews do not create accounts or consume the nonce.
 4. The POST revalidates the proof and consumes the hashed nonce in the same transaction as user/session writes. A PostgreSQL advisory lock serializes signup for one Telegram ID.
 5. Existing Telegram ID finds its linked user. A new user gets the Telegram username as nickname, or telegram_<id> if no username exists. Missing profile/settings are initialized. Existing custom nicknames are preserved.
-6. The response sets HTTP-only cookies and redirects to the profile.
+6. The response sets HTTP-only cookies and redirects to the profile workspace.
 
 Access JWT: 15 minutes. Refresh token/session: 30 days from sign-in. Refresh rotates the opaque token atomically without extending the original expiry. Only its SHA-256 uppercase-hex hash is stored in user_sessions. Cookies use SameSite=Lax and Secure for HTTPS. The refresh cookie is restricted to `/api/auth`.
 
 `currentUser()` verifies the JWT and active database session. Use the authenticated identity for ownership checks; do not trust user IDs from browser input. A valid session alone does not authorize editing another user's program.
 
-Refresh and logout are POST endpoints. Preserve trusted-origin checks and input limits when adding auth-adjacent endpoints. Username and raw Telegram ID query values alone never establish identity.
+Refresh rotation and logout use POST endpoints. A direct GET to the refresh URL leads to the profile hand-off without rotating a token. Local navigation is canonicalized by LeoWeb/proxy.ts to APP_ORIGIN so localhost/127.0.0.1 do not split cookies. Revoked sessions are hidden from profile lists while their database history is retained. Preserve trusted-origin checks and input limits when adding auth-adjacent endpoints. Username and raw Telegram ID query values alone never establish identity.
 
 ## 9. Database changes and schema ownership
 
@@ -257,9 +258,9 @@ If Windows locks running binaries, stop your own app before building or use a se
 
 ## 13. What is implemented and what is next
 
-Implemented: shared persistence and C# CRUD managers, ordering, console user constructors and mapped-record editing, localized responsive landing/theme, bot welcome, signed Telegram-to-web signup/login, refresh/logout, minimal nickname profile.
+Implemented: shared persistence and C# CRUD managers, ordering, console user constructors and mapped-record editing, localized responsive landing/theme, bot welcome, signed Telegram-to-web signup/login, refresh/logout, profile/settings/password/session workspace.
 
-Future: full web CRUD/editor screens, template-to-workout instantiation, browser-to-bot approval flow, Telegram Mini App integration, statistics, scheduled notifications, batch draft saves, background cleanup and a deployable shared API if desired. Installed drag-and-drop/form/query packages do not mean those product features already exist.
+Future: full web CRUD/editor screens, template-to-workout instantiation, Telegram Mini App integration, statistics, scheduled notifications, batch draft saves, background cleanup and a deployable shared API if desired. Installed drag-and-drop/form/query packages do not mean those product features already exist.
 
 ## 14. Git workflow
 
@@ -276,3 +277,13 @@ git push origin main
 ```
 
 Ignore local .env files, appsettings.Local.json, IDE state and build output. Track safe .env.example/appsettings.Local.example.json templates. Avoid committing secrets or complete signed sign-in links.
+
+## 15. Password sign-in and Telegram approval
+
+`/{locale}/login` implements nickname -> password -> Telegram waiting page. Passwords use the same ASP.NET Identity format as LeoCore. Credential verification queues a browser-bound five-minute request; LeoBot sends Yes/No with the matching request code. No rejects only this attempt. Yes allows one atomic redemption by the browser holding the HTTP-only challenge cookie, creating the normal session. The existing passwordless `/start` flow is still available.
+
+Web: `lib/auth/password-login.ts`, `password-http.ts`, `app/api/auth/password/`, `components/auth/password-login-form.tsx`. Bot: `Authentication/PasswordApprovalStore.cs`, `PasswordApprovalService.cs`, `Messages/PasswordApprovalMessages.cs`, `Hosting/PasswordApprovalWorker.cs`.
+
+Migration `LeoWeb/db/migrations/0002_password_login_approval.sql` creates only `password_login_requests` and `auth_rate_limits`. Run the auth migration script on new databases. The bot needs the existing .NET database connection configuration as well as its token; the web app still does not need the token or a public callback URL. Restart both apps after setup.
+
+Nicknames must match one account, case-insensitively; ambiguous names fail safely and can be changed after Telegram sign-in. Ten attempts per nickname per fifteen minutes are counted in PostgreSQL. Callbacks are bound to Telegram sender/private chat/message; redemption is bound to a hashed browser secret and rechecks password/Telegram state. Expiry, denial, cancellation and replay cannot create a session. Keep the bot running for notification delivery; failure never bypasses the second factor.

@@ -27,7 +27,10 @@ public static class DependencyInjection
         services.AddSingleton(TimeProvider.System);
         services.AddSingleton<TelegramLoginLinkFactory>();
         services.AddSingleton<LandingMessageFactory>();
+        services.AddSingleton<PasswordApprovalStore>();
+        services.AddSingleton<PasswordApprovalService>();
         services.AddSingleton<BotUpdateHandler>();
+        services.AddHostedService<PasswordApprovalWorker>();
         services.AddHostedService<BotWorker>();
         return services;
     }

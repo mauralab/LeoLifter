@@ -1,16 +1,22 @@
 using LeoBot.Messages;
+using LeoBot.Authentication;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace LeoBot.Handlers;
 
-public sealed class BotUpdateHandler(ITelegramBotClient bot, LandingMessageFactory messages)
+public sealed class BotUpdateHandler(ITelegramBotClient bot, LandingMessageFactory messages, PasswordApprovalService approvals)
 {
     public async Task HandleAsync(Update update, string? botUsername, CancellationToken ct)
     {
         if (update.CallbackQuery is { } callback)
         {
+            if (callback.Data?.StartsWith("login:", StringComparison.Ordinal) == true)
+            {
+                await approvals.HandleAsync(callback, ct);
+                return;
+            }
             // Answer callbacks even when no action exists, so Telegram clears its spinner.
             var placeholder = callback.Data == LandingMessageFactory.AuthPlaceholderCallback &&
                 callback.Message?.Chat.Type == ChatType.Private && callback.Message.Chat.Id == callback.From.Id;

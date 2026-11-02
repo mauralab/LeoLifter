@@ -51,3 +51,13 @@ Workout notifications, statistics, scheduled posts, web-initiated Telegram verif
 ## Checks
 
 Build with `dotnet build LeoBot/LeoBot.csproj`. Authentication was verified with .NET-generated links against a separate PostgreSQL fixture and an actual browser, including returning-user login, replay/tamper rejection, refresh rotation and transaction rollback. No real Telegram messages were sent by tests.
+
+## Password sign-in confirmation
+
+LeoWeb now provides nickname/password sign-in at `/{locale}/login`. After validating the password, it queues a five-minute request in the shared database. `PasswordApprovalWorker` sends its localized **Is this you? / Yes / No** prompt. **Yes** approves the initiating browser; **No** rejects that attempt without revoking existing sessions. Compare the request code with the waiting web page. The browser issues its session only after approval; the bot never receives the password or refresh token.
+
+Configure `ConnectionStrings__LeoDatabase` (or `LEODATABASE_CONNECTION_STRING`) for the same PostgreSQL database as LeoWeb. The ignored local JSON has been configured on this PC. Apply `npm run db:auth:migrate` from LeoWeb on new databases before starting. This creates the auth queue and durable login-attempt limits. Without a database connection the bot still provides `/start` but logs that password approvals are disabled.
+
+`Authentication/PasswordApprovalStore.cs` owns queue claiming/decision SQL; `PasswordApprovalService.cs` sends prompts and validates callback context; `Messages/PasswordApprovalMessages.cs` contains five-language text; `Hosting/PasswordApprovalWorker.cs` polls the queue. A callback must match the private Telegram identity, chat, stored message and live pending request. Decisions are atomic and one-way. Buttons are removed after a decision. Bounded retries handle transient delivery failures; requests expire instead of falling back to password-only sign-in.
+
+Offline validation uses a stub ITelegramBotClient HTTP transport and a separate PostgreSQL fixture. Never point test workers at the real database or send real test prompts without explicit authorization.
