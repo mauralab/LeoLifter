@@ -181,5 +181,111 @@
     "approved": "Approved. Opening your profile…",
     "passwordHint": "Enter the password you set in your profile.",
     "privateNote": "Only approve a request you started. No blocks this attempt without signing out your existing sessions."
+  },
+  "exercises": {
+    "title": "Exercises",
+    "eyebrow": "THE EXERCISE LIBRARY",
+    "intro": "Find the building blocks for your next workout.",
+    "browse": "Browse exercises",
+    "navigation": "Your training",
+    "profile": "Profile",
+    "search": "Search exercises",
+    "searchPlaceholder": "Search by exercise, muscle or equipment…",
+    "clearSearch": "Clear search",
+    "all": "All exercises",
+    "showing": "Showing {shown} of {total}",
+    "image": "Exercise image",
+    "sample": "Sample collection",
+    "sampleNote": "A preview of your exercise library. Program and workout editing will come next.",
+    "emptyTitle": "No exercises found",
+    "emptyBody": "Try another name or choose a different muscle group.",
+    "reset": "Clear filters",
+    "muscles": {
+      "chest": "Chest",
+      "back": "Back",
+      "legs": "Legs",
+      "shoulders": "Shoulders",
+      "core": "Core"
+    },
+    "equipment": {
+      "barbell": "Barbell",
+      "dumbbells": "Dumbbells",
+      "bodyweight": "Bodyweight",
+      "machine": "Machine"
+    },
+    "items": {
+      "squat": {
+        "name": "Barbell squat",
+        "description": "A lower-body staple built around the squat movement."
+      },
+      "bench": {
+        "name": "Bench press",
+        "description": "A horizontal press with a barbell and a flat bench."
+      },
+      "deadlift": {
+        "name": "Deadlift",
+        "description": "A barbell hinge movement for your posterior chain."
+      },
+      "row": {
+        "name": "Dumbbell row",
+        "description": "A single-arm pulling movement using a dumbbell."
+      },
+      "press": {
+        "name": "Overhead press",
+        "description": "A standing barbell press above the head."
+      },
+      "pulldown": {
+        "name": "Lat pulldown",
+        "description": "A vertical pulling movement on a cable machine."
+      },
+      "pushup": {
+        "name": "Push-up",
+        "description": "A bodyweight press with no equipment required."
+      },
+      "plank": {
+        "name": "Plank",
+        "description": "A stationary bodyweight hold focused on the core."
+      }
+    }
+  },
+  "exerciseEditor": {
+    "create": "Create exercise",
+    "back": "Back to exercises",
+    "eyebrow": "EXERCISE EDITOR",
+    "intro": "One exercise. In every language you need.",
+    "draft": "Local draft",
+    "draftNote": "Preview only. Images and translations stay on this page and are cleared when you leave or reload.",
+    "imageTitle": "Exercise image",
+    "imageNote": "One image for all languages.",
+    "chooseImage": "Choose image",
+    "dropImage": "Drop an image here, or choose a file",
+    "imageHint": "PNG, JPG or WebP · up to 5 MB",
+    "changeImage": "Change image",
+    "removeImage": "Remove image",
+    "invalidImage": "Choose a PNG, JPG or WebP image up to 5 MB.",
+    "imageFailed": "This image could not be displayed. Please choose another file.",
+    "translations": "Translations",
+    "translationNote": "Add languages and write a title and description for each.",
+    "addLanguage": "Add a language",
+    "allLanguages": "All languages added",
+    "removeLanguage": "Remove translation",
+    "empty": "Empty",
+    "inProgress": "In progress",
+    "ready": "Ready",
+    "title": "Title",
+    "titlePlaceholder": "For example, Barbell squat",
+    "description": "Description",
+    "descriptionPlaceholder": "Describe this exercise…",
+    "editing": "Editing",
+    "preview": "Preview exercise",
+    "livePreview": "Live preview",
+    "previewNote": "Showing the selected language.",
+    "titlePreview": "Your exercise title",
+    "descriptionPreview": "Your description will appear here.",
+    "cancel": "Back to library",
+    "close": "Close preview",
+    "optional": "Optional",
+    "textNote": "Each language has its own text.",
+    "imageAlt": "Selected exercise image"
   }
 }

@@ -181,5 +181,111 @@
     "approved": "Godkjent. Åpner profilen…",
     "passwordHint": "Skriv passordet du angav i profilen.",
     "privateNote": "Godkjenn bare din egen forespørsel. Nei blokkerer dette forsøket uten å logge ut eksisterende økter."
+  },
+  "exercises": {
+    "title": "Øvelser",
+    "eyebrow": "ØVELSESBIBLIOTEKET",
+    "intro": "Finn byggeklossene til din neste treningsøkt.",
+    "browse": "Se øvelser",
+    "navigation": "Din trening",
+    "profile": "Profil",
+    "search": "Søk etter øvelser",
+    "searchPlaceholder": "Søk etter øvelse, muskel eller utstyr…",
+    "clearSearch": "Tøm søket",
+    "all": "Alle øvelser",
+    "showing": "Viser {shown} av {total}",
+    "image": "Øvelsesbilde",
+    "sample": "Eksempelsamling",
+    "sampleNote": "En forhåndsvisning av øvelsesbiblioteket. Redigering av programmer og treningsøkter kommer senere.",
+    "emptyTitle": "Ingen øvelser funnet",
+    "emptyBody": "Prøv et annet navn eller velg en annen muskelgruppe.",
+    "reset": "Nullstill filtre",
+    "muscles": {
+      "chest": "Bryst",
+      "back": "Rygg",
+      "legs": "Bein",
+      "shoulders": "Skuldre",
+      "core": "Kjerne"
+    },
+    "equipment": {
+      "barbell": "Vektstang",
+      "dumbbells": "Manualer",
+      "bodyweight": "Kroppsvekt",
+      "machine": "Apparat"
+    },
+    "items": {
+      "squat": {
+        "name": "Knebøy med vektstang",
+        "description": "En grunnleggende knebøyøvelse for underkroppen."
+      },
+      "bench": {
+        "name": "Benkpress",
+        "description": "Horisontalt press med vektstang på flat benk."
+      },
+      "deadlift": {
+        "name": "Markløft",
+        "description": "En hoftebevegelse med vektstang for kroppens bakside."
+      },
+      "row": {
+        "name": "Enarmsroing",
+        "description": "En trekkøvelse med én arm og en manual."
+      },
+      "press": {
+        "name": "Skulderpress",
+        "description": "Stående press med vektstang over hodet."
+      },
+      "pulldown": {
+        "name": "Nedtrekk",
+        "description": "En vertikal trekkøvelse i kabelapparat."
+      },
+      "pushup": {
+        "name": "Armheving",
+        "description": "En pressøvelse med kroppsvekt uten utstyr."
+      },
+      "plank": {
+        "name": "Planke",
+        "description": "En statisk kroppsvektøvelse med fokus på kjernen."
+      }
+    }
+  },
+  "exerciseEditor": {
+    "create": "Opprett øvelse",
+    "back": "Tilbake til øvelser",
+    "eyebrow": "ØVELSESREDIGERING",
+    "intro": "Én øvelse. Alle språkene du trenger.",
+    "draft": "Lokalt utkast",
+    "draftNote": "Kun forhåndsvisning. Bilder og oversettelser blir på denne siden og fjernes når du forlater den eller laster på nytt.",
+    "imageTitle": "Øvelsesbilde",
+    "imageNote": "Ett bilde for alle språk.",
+    "chooseImage": "Velg bilde",
+    "dropImage": "Slipp et bilde her, eller velg en fil",
+    "imageHint": "PNG, JPG eller WebP · opptil 5 MB",
+    "changeImage": "Bytt bilde",
+    "removeImage": "Fjern bilde",
+    "invalidImage": "Velg et PNG-, JPG- eller WebP-bilde på opptil 5 MB.",
+    "imageFailed": "Bildet kunne ikke vises. Velg en annen fil.",
+    "translations": "Oversettelser",
+    "translationNote": "Legg til språk og skriv navn og beskrivelse for hvert språk.",
+    "addLanguage": "Legg til språk",
+    "allLanguages": "Alle språk er lagt til",
+    "removeLanguage": "Fjern oversettelse",
+    "empty": "Tom",
+    "inProgress": "Påbegynt",
+    "ready": "Klar",
+    "title": "Navn",
+    "titlePlaceholder": "For eksempel Knebøy med vektstang",
+    "description": "Beskrivelse",
+    "descriptionPlaceholder": "Beskriv øvelsen…",
+    "editing": "Redigerer",
+    "preview": "Forhåndsvis øvelse",
+    "livePreview": "Forhåndsvisning",
+    "previewNote": "Viser det valgte språket.",
+    "titlePreview": "Navnet på øvelsen",
+    "descriptionPreview": "Beskrivelsen vises her.",
+    "cancel": "Til biblioteket",
+    "close": "Lukk forhåndsvisning",
+    "optional": "Valgfritt",
+    "textNote": "Hvert språk har sin egen tekst.",
+    "imageAlt": "Valgt øvelsesbilde"
   }
 }

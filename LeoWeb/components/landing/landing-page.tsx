@@ -188,6 +188,7 @@ export function LandingPage({
           <Brand />
         </Link>
         <nav aria-label={d.navIdea}>
+          <Link href={`/${locale}/exercises`}>{d.exercises.title}</Link>
           <a href="#idea">{d.navIdea}</a>
           <a href="#preview">{d.navPreview}</a>
           <a href="#roadmap">{d.navRoadmap}</a>
@@ -237,6 +238,14 @@ export function LandingPage({
                 <ArrowRight size={16} />
               </a>
             </div>
+            <Link
+              className="exercise-landing-entry"
+              href={`/${locale}/exercises`}
+            >
+              <Dumbbell size={16} aria-hidden="true" />
+              {d.exercises.browse}
+              <ArrowRight size={14} aria-hidden="true" />
+            </Link>
             <div className="hero-note">
               <span className="platform-icons" aria-hidden="true">
                 <Monitor size={14} />

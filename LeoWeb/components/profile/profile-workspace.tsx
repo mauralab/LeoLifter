@@ -17,6 +17,7 @@ import {
   ShieldCheck,
   UserRound,
 } from "lucide-react"
+import { TrainingNavigation } from "@/components/navigation/training-navigation"
 import { HeaderPreferences } from "@/components/landing/header-preferences"
 import { type Locale, type Messages, languages, locales } from "@/lib/i18n"
 import type { ProfileData } from "@/lib/profile/store"
@@ -149,13 +150,18 @@ export function ProfileWorkspace({
   })
   return (
     <main className="account-page">
-      <header className="account-topbar">
+      <header className="account-topbar exercises-topbar">
         <Link className="account-brand" href={`/${locale}`}>
           <Image src="/brand/leo-web.png" alt="" width={46} height={54} />
           <span>
             LeoLifter<span className="account-brand-dot">.</span>
           </span>
         </Link>
+        <TrainingNavigation
+          locale={locale}
+          copy={messages.exercises}
+          current="profile"
+        />
         <HeaderPreferences locale={locale} copy={messages} />
       </header>
       <div className="account-container">

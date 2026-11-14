@@ -181,5 +181,111 @@
     "approved": "Zatwierdzono. Otwieranie profilu…",
     "passwordHint": "Wpisz hasło ustawione w profilu.",
     "privateNote": "Zatwierdzaj tylko własne żądanie. Nie blokuje tę próbę bez wylogowywania istniejących sesji."
+  },
+  "exercises": {
+    "title": "Ćwiczenia",
+    "eyebrow": "BIBLIOTEKA ĆWICZEŃ",
+    "intro": "Znajdź podstawy swojego następnego treningu.",
+    "browse": "Przeglądaj ćwiczenia",
+    "navigation": "Twój trening",
+    "profile": "Profil",
+    "search": "Szukaj ćwiczeń",
+    "searchPlaceholder": "Szukaj ćwiczenia, mięśni lub sprzętu…",
+    "clearSearch": "Wyczyść wyszukiwanie",
+    "all": "Wszystkie ćwiczenia",
+    "showing": "Wyświetlono {shown} z {total}",
+    "image": "Zdjęcie ćwiczenia",
+    "sample": "Przykładowy zestaw",
+    "sampleNote": "Podgląd biblioteki ćwiczeń. Edytor programów i treningów dodamy później.",
+    "emptyTitle": "Nie znaleziono ćwiczeń",
+    "emptyBody": "Spróbuj innej nazwy lub wybierz inną grupę mięśni.",
+    "reset": "Wyczyść filtry",
+    "muscles": {
+      "chest": "Klatka piersiowa",
+      "back": "Plecy",
+      "legs": "Nogi",
+      "shoulders": "Barki",
+      "core": "Tułów"
+    },
+    "equipment": {
+      "barbell": "Sztanga",
+      "dumbbells": "Hantle",
+      "bodyweight": "Masa ciała",
+      "machine": "Maszyna"
+    },
+    "items": {
+      "squat": {
+        "name": "Przysiad ze sztangą",
+        "description": "Podstawowy ruch przysiadu dla dolnej części ciała."
+      },
+      "bench": {
+        "name": "Wyciskanie leżąc",
+        "description": "Poziome wyciskanie sztangi na płaskiej ławce."
+      },
+      "deadlift": {
+        "name": "Martwy ciąg",
+        "description": "Ruch zawiasowy ze sztangą dla tylnej części ciała."
+      },
+      "row": {
+        "name": "Wiosłowanie hantlem",
+        "description": "Ruch przyciągania jedną ręką z hantlem."
+      },
+      "press": {
+        "name": "Wyciskanie nad głowę",
+        "description": "Wyciskanie sztangi nad głowę w pozycji stojącej."
+      },
+      "pulldown": {
+        "name": "Ściąganie drążka",
+        "description": "Pionowe przyciąganie na wyciągu."
+      },
+      "pushup": {
+        "name": "Pompka",
+        "description": "Ruch wyciskania z masą ciała bez sprzętu."
+      },
+      "plank": {
+        "name": "Deska",
+        "description": "Statyczne utrzymanie pozycji z akcentem na mięśnie tułowia."
+      }
+    }
+  },
+  "exerciseEditor": {
+    "create": "Utwórz ćwiczenie",
+    "back": "Powrót do ćwiczeń",
+    "eyebrow": "EDYTOR ĆWICZEŃ",
+    "intro": "Jedno ćwiczenie. W każdym potrzebnym języku.",
+    "draft": "Lokalny szkic",
+    "draftNote": "Tylko podgląd. Zdjęcia i tłumaczenia pozostają na tej stronie i znikają po jej opuszczeniu lub odświeżeniu.",
+    "imageTitle": "Zdjęcie ćwiczenia",
+    "imageNote": "Jedno zdjęcie dla wszystkich języków.",
+    "chooseImage": "Wybierz zdjęcie",
+    "dropImage": "Przeciągnij zdjęcie tutaj lub wybierz plik",
+    "imageHint": "PNG, JPG lub WebP · do 5 MB",
+    "changeImage": "Zmień zdjęcie",
+    "removeImage": "Usuń zdjęcie",
+    "invalidImage": "Wybierz zdjęcie PNG, JPG lub WebP o rozmiarze do 5 MB.",
+    "imageFailed": "Nie można wyświetlić zdjęcia. Wybierz inny plik.",
+    "translations": "Tłumaczenia",
+    "translationNote": "Dodaj języki i wpisz tytuł oraz opis dla każdego z nich.",
+    "addLanguage": "Dodaj język",
+    "allLanguages": "Dodano wszystkie języki",
+    "removeLanguage": "Usuń tłumaczenie",
+    "empty": "Puste",
+    "inProgress": "W trakcie",
+    "ready": "Gotowe",
+    "title": "Tytuł",
+    "titlePlaceholder": "Na przykład Przysiad ze sztangą",
+    "description": "Opis",
+    "descriptionPlaceholder": "Opisz to ćwiczenie…",
+    "editing": "Edycja",
+    "preview": "Podgląd ćwiczenia",
+    "livePreview": "Podgląd na żywo",
+    "previewNote": "Wyświetlany jest wybrany język.",
+    "titlePreview": "Tytuł Twojego ćwiczenia",
+    "descriptionPreview": "Tutaj pojawi się opis.",
+    "cancel": "Do biblioteki",
+    "close": "Zamknij podgląd",
+    "optional": "Opcjonalne",
+    "textNote": "Każdy język ma osobny tekst.",
+    "imageAlt": "Wybrane zdjęcie ćwiczenia"
   }
 }

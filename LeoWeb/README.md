@@ -123,3 +123,15 @@ Nicknames are matched case-insensitively after trimming, and must resolve to exa
 LeoBot's `PasswordApprovalWorker` claims pending notifications with a short retry lease (`FOR UPDATE SKIP LOCKED`), sends localized buttons, and records Telegram's message ID. Callback decisions require the stored Telegram sender, private chat, message ID, pending state and unexpired request; replay cannot change a decision. Sending errors use sanitized logs and never bypass approval. Delivery retries are bounded; if delivery fails or the bot is offline, the attempt eventually expires.
 
 Validation used isolated PostgreSQL, browser automation and a stub Telegram HTTP transport, including both decisions, expiration, cancellation, replays, wrong sender/chat/message, group callbacks, another browser's forged proof, concurrent redemption, password-change invalidation, ambiguous names, CSRF, database-backed throttling and responsive layouts in all five locales. No real Telegram messages were sent during tests.
+
+## Exercise library preview
+
+`/[locale]/exercises` is a frontend-only catalog with eight localized sample exercises. Cards reserve image space and show the exercise name, a short description, muscle group and equipment. Search and muscle filters run in browser state, including an empty state and reset action. No database queries, API requests or persistence are involved.
+
+Fixtures live in `lib/exercises/sample-exercises.ts`, presentation in `components/exercises/exercise-library.tsx`, and copy under each locale dictionary's `exercises` key. `components/navigation/training-navigation.tsx` links the Exercises and Profile pages. The landing page also links to the catalog. Image assets, editor actions and backend integration can be added later.
+
+### Create exercise layout
+
+The catalog's **Create exercise** button opens `/{locale}/exercises/create`. `components/exercises/exercise-editor.tsx` holds a temporary browser draft with one shared image and separate title/description fields for each enabled language. Add/remove English, Ukrainian, Norwegian Bokmål, German and Polish through the language list; switching between those entries preserves their text. The sidebar and preview dialog show the selected translation.
+
+Image selection and drag-and-drop use a local object URL (PNG/JPEG/WebP, up to 5 MB); the preview is never uploaded, and object URLs are released on replacement/unmount. The page has no save/publish operation, database connection or API calls. Reloading resets the draft. The Preview action opens a local preview only.

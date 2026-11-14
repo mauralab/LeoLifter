@@ -181,5 +181,111 @@
     "approved": "Bestätigt. Dein Profil wird geöffnet…",
     "passwordHint": "Gib das Passwort aus deinem Profil ein.",
     "privateNote": "Bestätige nur deine eigene Anfrage. Nein blockiert diesen Versuch, ohne bestehende Sitzungen abzumelden."
+  },
+  "exercises": {
+    "title": "Übungen",
+    "eyebrow": "DIE ÜBUNGSBIBLIOTHEK",
+    "intro": "Finde die Bausteine für dein nächstes Training.",
+    "browse": "Übungen entdecken",
+    "navigation": "Dein Training",
+    "profile": "Profil",
+    "search": "Übungen suchen",
+    "searchPlaceholder": "Nach Übung, Muskel oder Gerät suchen…",
+    "clearSearch": "Suche leeren",
+    "all": "Alle Übungen",
+    "showing": "{shown} von {total} angezeigt",
+    "image": "Übungsbild",
+    "sample": "Beispielsammlung",
+    "sampleNote": "Eine Vorschau deiner Übungsbibliothek. Programm- und Trainingseditor folgen später.",
+    "emptyTitle": "Keine Übungen gefunden",
+    "emptyBody": "Versuche einen anderen Namen oder eine andere Muskelgruppe.",
+    "reset": "Filter zurücksetzen",
+    "muscles": {
+      "chest": "Brust",
+      "back": "Rücken",
+      "legs": "Beine",
+      "shoulders": "Schultern",
+      "core": "Rumpf"
+    },
+    "equipment": {
+      "barbell": "Langhantel",
+      "dumbbells": "Kurzhanteln",
+      "bodyweight": "Körpergewicht",
+      "machine": "Gerät"
+    },
+    "items": {
+      "squat": {
+        "name": "Langhantel-Kniebeuge",
+        "description": "Eine grundlegende Kniebeugebewegung für den Unterkörper."
+      },
+      "bench": {
+        "name": "Bankdrücken",
+        "description": "Horizontales Drücken mit der Langhantel auf einer Flachbank."
+      },
+      "deadlift": {
+        "name": "Kreuzheben",
+        "description": "Eine Hüftbewegung mit der Langhantel für die Körperrückseite."
+      },
+      "row": {
+        "name": "Kurzhantelrudern",
+        "description": "Eine einarmige Zugbewegung mit einer Kurzhantel."
+      },
+      "press": {
+        "name": "Schulterdrücken",
+        "description": "Drücken der Langhantel über den Kopf im Stehen."
+      },
+      "pulldown": {
+        "name": "Latzug",
+        "description": "Eine vertikale Zugbewegung am Kabelzug."
+      },
+      "pushup": {
+        "name": "Liegestütz",
+        "description": "Eine Druckbewegung mit dem eigenen Körpergewicht ohne Geräte."
+      },
+      "plank": {
+        "name": "Unterarmstütz",
+        "description": "Eine statische Halteübung für die Rumpfmuskulatur."
+      }
+    }
+  },
+  "exerciseEditor": {
+    "create": "Übung erstellen",
+    "back": "Zurück zu den Übungen",
+    "eyebrow": "ÜBUNGSEDITOR",
+    "intro": "Eine Übung. In allen Sprachen, die du brauchst.",
+    "draft": "Lokaler Entwurf",
+    "draftNote": "Nur Vorschau. Bilder und Übersetzungen bleiben auf dieser Seite und werden beim Verlassen oder Neuladen gelöscht.",
+    "imageTitle": "Übungsbild",
+    "imageNote": "Ein Bild für alle Sprachen.",
+    "chooseImage": "Bild auswählen",
+    "dropImage": "Bild hier ablegen oder Datei auswählen",
+    "imageHint": "PNG, JPG oder WebP · bis zu 5 MB",
+    "changeImage": "Bild ändern",
+    "removeImage": "Bild entfernen",
+    "invalidImage": "Wähle ein PNG-, JPG- oder WebP-Bild mit bis zu 5 MB.",
+    "imageFailed": "Das Bild konnte nicht angezeigt werden. Wähle eine andere Datei.",
+    "translations": "Übersetzungen",
+    "translationNote": "Füge Sprachen hinzu und schreibe jeweils einen Titel und eine Beschreibung.",
+    "addLanguage": "Sprache hinzufügen",
+    "allLanguages": "Alle Sprachen hinzugefügt",
+    "removeLanguage": "Übersetzung entfernen",
+    "empty": "Leer",
+    "inProgress": "In Bearbeitung",
+    "ready": "Fertig",
+    "title": "Titel",
+    "titlePlaceholder": "Zum Beispiel Langhantel-Kniebeuge",
+    "description": "Beschreibung",
+    "descriptionPlaceholder": "Beschreibe diese Übung…",
+    "editing": "Bearbeitung",
+    "preview": "Übung ansehen",
+    "livePreview": "Live-Vorschau",
+    "previewNote": "Die ausgewählte Sprache wird angezeigt.",
+    "titlePreview": "Titel deiner Übung",
+    "descriptionPreview": "Deine Beschreibung erscheint hier.",
+    "cancel": "Zur Bibliothek",
+    "close": "Vorschau schließen",
+    "optional": "Optional",
+    "textNote": "Jede Sprache hat ihren eigenen Text.",
+    "imageAlt": "Ausgewähltes Übungsbild"
   }
 }
