@@ -1,6 +1,6 @@
 import Link from "next/link"
-import { Dumbbell, UserRound } from "lucide-react"
-import type { Locale, Messages } from "@/lib/i18n"
+import { Dumbbell, Layers3, UserRound } from "lucide-react"
+import { getMessages, type Locale, type Messages } from "@/lib/i18n"
 export function TrainingNavigation({
   locale,
   copy,
@@ -8,7 +8,7 @@ export function TrainingNavigation({
 }: {
   locale: Locale
   copy: Messages["exercises"]
-  current: "exercises" | "profile"
+  current: "exercises" | "profile" | "programs"
 }) {
   return (
     <nav className="training-navigation" aria-label={copy.navigation}>
@@ -18,6 +18,13 @@ export function TrainingNavigation({
       >
         <Dumbbell size={16} aria-hidden="true" />
         {copy.title}
+      </Link>
+      <Link
+        href={`/${locale}/programs`}
+        aria-current={current === "programs" ? "page" : undefined}
+      >
+        <Layers3 size={16} aria-hidden="true" />
+        {getMessages(locale).programs.title}
       </Link>
       <Link
         href={`/${locale}/profile`}

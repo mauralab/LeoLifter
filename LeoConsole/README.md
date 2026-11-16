@@ -115,7 +115,7 @@ The user list has `1. New`, `2. Search`, `3. Refresh`, `4. Delete`. Search is hi
 
 ## SQL tables
 
-At Home press Left/Right to select **SQL tables**, then `1` to browse all 23 mapped tables. The table catalog and record lists are paginated at ten rows per page. Enter opens a table/record. Record lists have `1. New`, `2. Search`, `3. Refresh`, `4. Delete`; search matches text columns or numeric primary keys.
+At Home press Left/Right to select **SQL tables**, then `1` to browse all mapped tables. The table catalog and record lists are paginated at ten rows per page. Enter opens a table/record. Record lists have `1. New`, `2. Search`, `3. Refresh`, `4. Delete`; search matches text columns or numeric primary keys.
 
 Lists show a compact selection of up to four non-secret columns; the record editor exposes all editable scalar columns. Composite primary keys are supported. Existing primary keys and timestamps are not editable; identity keys are generated on insert. Foreign keys use their record IDs. Booleans/enums use arrow selectors. Dates use `yyyy-MM-dd` and UTC timestamps use `yyyy-MM-dd HH:mm:ss`. Blank optional fields mean NULL. Hash fields are masked in editors and omitted from list columns.
 

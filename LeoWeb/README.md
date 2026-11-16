@@ -124,14 +124,28 @@ LeoBot's `PasswordApprovalWorker` claims pending notifications with a short retr
 
 Validation used isolated PostgreSQL, browser automation and a stub Telegram HTTP transport, including both decisions, expiration, cancellation, replays, wrong sender/chat/message, group callbacks, another browser's forged proof, concurrent redemption, password-change invalidation, ambiguous names, CSRF, database-backed throttling and responsive layouts in all five locales. No real Telegram messages were sent during tests.
 
-## Exercise library preview
+## Exercise management
 
-`/[locale]/exercises` is a frontend-only catalog with eight localized sample exercises. Cards reserve image space and show the exercise name, a short description, muscle group and equipment. Search and muscle filters run in browser state, including an empty state and reset action. No database queries, API requests or persistence are involved.
+`/[locale]/exercises` reads the shared PostgreSQL catalog, searches default and translated text, filters by exercise type and paginates cards (12 per page). Requested-language text falls back to English and then the default exercise fields. The catalog is public; create/edit pages and POST/PUT/DELETE endpoints require an active signed-in session. All signed-in users can modify exercises; roles are intentionally not checked yet. Mutations enforce the configured APP_ORIGIN.
 
-Fixtures live in `lib/exercises/sample-exercises.ts`, presentation in `components/exercises/exercise-library.tsx`, and copy under each locale dictionary's `exercises` key. `components/navigation/training-navigation.tsx` links the Exercises and Profile pages. The landing page also links to the catalog. Image assets, editor actions and backend integration can be added later.
+The original card layout, search box and filter chips are retained. The editor retains its language sidebar, drag-and-drop cover upload, live preview and preview dialog. Additional media fields are expandable.
 
-### Create exercise layout
+Create opens `/[locale]/exercises/create`; selecting a card opens `/[locale]/exercises/[id]`. Edit default title/description, type, body/additional-weight flags, translations, and ordered image/video entries. Each media entry has independent URL, title, description and alternative text per language. Languages come from the database. Save replaces translations and media atomically; media row IDs are internal and are regenerated. Delete asks for confirmation and refuses exercises referenced by programs or workouts.
 
-The catalog's **Create exercise** button opens `/{locale}/exercises/create`. `components/exercises/exercise-editor.tsx` holds a temporary browser draft with one shared image and separate title/description fields for each enabled language. Add/remove English, Ukrainian, Norwegian Bokmål, German and Polish through the language list; switching between those entries preserves their text. The sidebar and preview dialog show the selected translation.
+Uploads accept PNG/JPEG/WebP up to 5 MB and MP4/WebM up to 25 MB, with file signatures checked. Files are stored outside Git under `.exercise-media` by default; set `EXERCISE_MEDIA_ROOT` to an absolute durable directory in production, back it up separately and use shared storage if running multiple web instances. `/api/exercises/files/[name]` serves files with byte-range support. External HTTP(S) media URLs are also supported. Removing media removes its database references; uploaded files are retained so reused URLs remain valid. Unused uploads require periodic storage maintenance. Files are public, like the exercise catalog.
 
-Image selection and drag-and-drop use a local object URL (PNG/JPEG/WebP, up to 5 MB); the preview is never uploaded, and object URLs are released on replacement/unmount. The page has no save/publish operation, database connection or API calls. Reloading resets the draft. The Preview action opens a local preview only.
+Server validation limits lengths/counts and rejects unknown or duplicate languages. Catalog presentation lives in `components/exercises`, database transactions in `lib/exercises/store.ts`, and request/upload handlers under `app/api/exercises`. Frontend interface copy supports the five application locales; API failure details currently use English.
+
+## Exercise database schema
+
+Drizzle mappings now include `languages`, `exercises`, `exercise_translations`, `exercise_media` and `exercise_media_translations`. The schema is owned by LeoDatabase; see `../LeoDatabase/README.md` for field and relationship details. Apply its reviewed additive SQL upgrade with `npm run db:exercises:migrate` using the existing DATABASE_URL. This is separate from authentication migrations and was applied locally on 16 November 2026.
+
+The web catalog/editor use these mappings for persistent CRUD and localized uploads. Legacy exercise name/description columns remain as fallback fields; localized media can share a URL or point to different assets by language. Do not run blanket Drizzle push against the partial shared schema.
+
+### Starter exercises
+
+Run `npm run db:exercises:seed` after the exercise schema migration to add Pull-up, Bench press, Squat and Deadlift with text in all five supported languages. The transaction checks common existing names, adds only missing exercises/translations, and preserves existing edits. This seeds database records, not browser fixtures. Images remain empty until uploaded.
+
+## Program editor layout
+
+`/[locale]/programs` shows a Programs workspace with a Create program link. `/[locale]/programs/create` opens the Program tab with an editable name and a live draft title. This initial layout has no database queries, save actions or API requests; the draft resets when leaving or reloading. Programs is available in the shared training navigation and landing header. Interface text is translated into all five application languages.

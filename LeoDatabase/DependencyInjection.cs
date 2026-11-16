@@ -21,6 +21,7 @@ public static class DependencyInjection
         ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
         return options.UseNpgsql(connectionString, postgres => postgres
             .MapEnum<ExerciseType>("exercise_type")
+            .MapEnum<ExerciseMediaType>("exercise_media_type")
             .MapEnum<WeightUnit>("weight_unit")
             .MapEnum<LengthUnit>("length_unit")
             .MapEnum<ProgramValueUnit>("program_value_unit")

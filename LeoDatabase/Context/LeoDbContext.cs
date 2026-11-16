@@ -1,4 +1,5 @@
 using LeoDatabase.Models.Access;
+using LeoDatabase.Models.Localization;
 using LeoDatabase.Models.Personal;
 using LeoDatabase.Models.Users;
 using LeoDatabase.Models.Workout;
@@ -24,6 +25,10 @@ public sealed class LeoDbContext(DbContextOptions<LeoDbContext> options) : DbCon
     public DbSet<UserRole> UserRoles => Set<UserRole>();
     public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
     public DbSet<UserPermission> UserPermissions => Set<UserPermission>();
+    public DbSet<Language> Languages => Set<Language>();
+    public DbSet<ExerciseTranslation> ExerciseTranslations => Set<ExerciseTranslation>();
+    public DbSet<ExerciseMedia> ExerciseMedia => Set<ExerciseMedia>();
+    public DbSet<ExerciseMediaTranslation> ExerciseMediaTranslations => Set<ExerciseMediaTranslation>();
     public DbSet<Exercise> Exercises => Set<Exercise>();
     public DbSet<TrainingProgram> Programs => Set<TrainingProgram>();
     public DbSet<ProgramCycle> ProgramCycles => Set<ProgramCycle>();
@@ -42,6 +47,7 @@ public sealed class LeoDbContext(DbContextOptions<LeoDbContext> options) : DbCon
         UserConfiguration.Configure(modelBuilder);
         AccessConfiguration.Configure(modelBuilder);
         ProgramConfiguration.Configure(modelBuilder);
+        ExerciseLocalizationConfiguration.Configure(modelBuilder);
         WorkoutConfiguration.Configure(modelBuilder);
 
         var translator = new NpgsqlSnakeCaseNameTranslator();

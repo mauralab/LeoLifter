@@ -189,6 +189,7 @@ export function LandingPage({
         </Link>
         <nav aria-label={d.navIdea}>
           <Link href={`/${locale}/exercises`}>{d.exercises.title}</Link>
+          <Link href={`/${locale}/programs`}>{d.programs.title}</Link>
           <a href="#idea">{d.navIdea}</a>
           <a href="#preview">{d.navPreview}</a>
           <a href="#roadmap">{d.navRoadmap}</a>

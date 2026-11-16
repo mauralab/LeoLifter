@@ -10,7 +10,9 @@
     "lint": "eslint",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit",
-    "db:auth:migrate": "node scripts/migrate-auth.mjs"
+    "db:auth:migrate": "node scripts/migrate-auth.mjs",
+    "db:exercises:migrate": "node scripts/migrate-exercises.mjs",
+    "db:exercises:seed": "node scripts/seed-exercises.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

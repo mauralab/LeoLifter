@@ -190,7 +190,7 @@
     "navigation": "Dein Training",
     "profile": "Profil",
     "search": "Übungen suchen",
-    "searchPlaceholder": "Nach Übung, Muskel oder Gerät suchen…",
+    "searchPlaceholder": "Übungen suchen…",
     "clearSearch": "Suche leeren",
     "all": "Alle Übungen",
     "showing": "{shown} von {total} angezeigt",
@@ -256,7 +256,7 @@
     "draft": "Lokaler Entwurf",
     "draftNote": "Nur Vorschau. Bilder und Übersetzungen bleiben auf dieser Seite und werden beim Verlassen oder Neuladen gelöscht.",
     "imageTitle": "Übungsbild",
-    "imageNote": "Ein Bild für alle Sprachen.",
+    "imageNote": "Lade ein Bild für die ausgewählte Sprache hoch. Weitere Bilder und Videos findest du unten.",
     "chooseImage": "Bild auswählen",
     "dropImage": "Bild hier ablegen oder Datei auswählen",
     "imageHint": "PNG, JPG oder WebP · bis zu 5 MB",
@@ -287,5 +287,22 @@
     "optional": "Optional",
     "textNote": "Jede Sprache hat ihren eigenen Text.",
     "imageAlt": "Ausgewähltes Übungsbild"
+  },
+  "programs": {
+    "title": "Programme",
+    "eyebrow": "TRAININGSPROGRAMME",
+    "intro": "Erstelle einen Plan für deinen nächsten Trainingsabschnitt.",
+    "create": "Programm erstellen",
+    "emptyTitle": "Dein nächstes Programm beginnt hier",
+    "emptyBody": "Erstelle ein Programm und gib ihm einen Namen.",
+    "back": "Zurück zu Programmen",
+    "editorIntro": "Beginne mit einem Namen. Den Rest des Programms kannst du später ergänzen.",
+    "tab": "Programm",
+    "name": "Programmname",
+    "namePlaceholder": "Zum Beispiel, Kraftgrundlagen",
+    "untitled": "Unbenanntes Programm",
+    "draft": "Entwurf",
+    "draftNote": "Änderungen bleiben vorerst nur auf dieser Seite.",
+    "nameHint": "Wähle einen Namen, mit dem du das Programm leicht wiederfindest."
   }
 }

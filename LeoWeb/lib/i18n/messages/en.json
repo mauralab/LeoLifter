@@ -190,7 +190,7 @@
     "navigation": "Your training",
     "profile": "Profile",
     "search": "Search exercises",
-    "searchPlaceholder": "Search by exercise, muscle or equipment…",
+    "searchPlaceholder": "Search exercises…",
     "clearSearch": "Clear search",
     "all": "All exercises",
     "showing": "Showing {shown} of {total}",
@@ -256,7 +256,7 @@
     "draft": "Local draft",
     "draftNote": "Preview only. Images and translations stay on this page and are cleared when you leave or reload.",
     "imageTitle": "Exercise image",
-    "imageNote": "One image for all languages.",
+    "imageNote": "Upload an image for the selected language. More images and videos are available below.",
     "chooseImage": "Choose image",
     "dropImage": "Drop an image here, or choose a file",
     "imageHint": "PNG, JPG or WebP · up to 5 MB",
@@ -287,5 +287,22 @@
     "optional": "Optional",
     "textNote": "Each language has its own text.",
     "imageAlt": "Selected exercise image"
+  },
+  "programs": {
+    "title": "Programs",
+    "eyebrow": "TRAINING PROGRAMS",
+    "intro": "Build a plan for your next training chapter.",
+    "create": "Create program",
+    "emptyTitle": "Your next program starts here",
+    "emptyBody": "Create a program and give it a name to get started.",
+    "back": "Back to programs",
+    "editorIntro": "Start with a name. Build the rest of your program later.",
+    "tab": "Program",
+    "name": "Program name",
+    "namePlaceholder": "For example, Strength foundation",
+    "untitled": "Untitled program",
+    "draft": "Draft",
+    "draftNote": "Changes stay on this page for now.",
+    "nameHint": "Choose a name that makes your program easy to find."
   }
 }

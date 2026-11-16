@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"
+import { exerciseList, languageList } from "@/lib/exercises/store"
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { getMessages, isLocale } from "@/lib/i18n"
@@ -18,5 +20,12 @@ export default async function ExercisesPage({
 }) {
   const { locale } = await params
   if (!isLocale(locale)) notFound()
-  return <ExerciseLibrary locale={locale} messages={getMessages(locale)} />
+  return (
+    <ExerciseLibrary
+      locale={locale}
+      messages={getMessages(locale)}
+      items={await exerciseList()}
+      languages={await languageList()}
+    />
+  )
 }

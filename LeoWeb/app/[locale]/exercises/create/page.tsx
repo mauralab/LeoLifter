@@ -1,3 +1,6 @@
+import { languageList } from "@/lib/exercises/store"
+import { currentUser } from "@/lib/auth/session"
+import { redirect } from "next/navigation"
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { getMessages, isLocale } from "@/lib/i18n"
@@ -18,8 +21,10 @@ export default async function CreateExercisePage({
 }) {
   const { locale } = await params
   if (!isLocale(locale)) notFound()
+  if (!(await currentUser())) redirect(`/${locale}/login`)
   return (
     <ExerciseEditor
+      languages={await languageList()}
       key={locale}
       locale={locale}
       messages={getMessages(locale)}

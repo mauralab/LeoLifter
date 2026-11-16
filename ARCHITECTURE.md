@@ -1,6 +1,6 @@
 # LeoLifter architecture and feature development guide
 
-Current architecture: 2 November 2026.
+Current architecture: 16 November 2026.
 Project: `C:\Users\GLaDOS\RiderProjects\LeoConsole`
 Solution: `LeoLifter.sln`
 Repository: https://github.com/mauralab/LeoLifter
@@ -260,7 +260,7 @@ If Windows locks running binaries, stop your own app before building or use a se
 
 Implemented: shared persistence and C# CRUD managers, ordering, console user constructors and mapped-record editing, localized responsive landing/theme, bot welcome, signed Telegram-to-web signup/login, refresh/logout, profile/settings/password/session workspace.
 
-Future: full web CRUD/editor screens, template-to-workout instantiation, Telegram Mini App integration, statistics, scheduled notifications, batch draft saves, background cleanup and a deployable shared API if desired. Installed drag-and-drop/form/query packages do not mean those product features already exist.
+Future: program/workout web CRUD/editor screens, template-to-workout instantiation, Telegram Mini App integration, statistics, scheduled notifications, batch draft saves, background cleanup and a deployable shared API if desired. Installed drag-and-drop/form/query packages do not mean those product features already exist.
 
 ## 14. Git workflow
 
@@ -287,3 +287,11 @@ Web: `lib/auth/password-login.ts`, `password-http.ts`, `app/api/auth/password/`,
 Migration `LeoWeb/db/migrations/0002_password_login_approval.sql` creates only `password_login_requests` and `auth_rate_limits`. Run the auth migration script on new databases. The bot needs the existing .NET database connection configuration as well as its token; the web app still does not need the token or a public callback URL. Restart both apps after setup.
 
 Nicknames must match one account, case-insensitively; ambiguous names fail safely and can be changed after Telegram sign-in. Ten attempts per nickname per fifteen minutes are counted in PostgreSQL. Callbacks are bound to Telegram sender/private chat/message; redemption is bound to a hashed browser secret and rechecks password/Telegram state. Expiry, denial, cancellation and replay cannot create a session. Keep the bot running for notification delivery; failure never bypasses the second factor.
+
+## 16. Localized exercise text and media
+
+Exercise schema now includes a seeded `languages` lookup (en, uk, nb, de, pl), `exercise_translations` keyed by exercise/language, ordered `exercise_media` rows typed image/video, and `exercise_media_translations` keyed by media/language. Media translations contain the asset URL plus optional title, description and alt text. Assets themselves stay outside PostgreSQL. One exercise can have several media items, and each can have different localized files or share one URL across languages.
+
+The existing exercises name/description remain explicitly editable compatibility fallback fields. The web catalog reads persisted records, choosing requested-language text, then English, then these fallback fields. Web create/edit/delete lives in `LeoWeb/lib/exercises/store.ts` and `app/api/exercises`; it uses transactions for translations and ordered media. All signed-in accounts may modify the shared catalog for now, with no role checks. Deletion preserves program/workout references through database restrictions. Uploads are public local files stored separately from PostgreSQL; configure durable EXERCISE_MEDIA_ROOT and back it up. See LeoWeb/README.md for limits and maintenance.
+
+EF configuration: `LeoDatabase/Context/Configurations/ExerciseLocalizationConfiguration.cs`. Explicit additive upgrade: `LeoDatabase/Sql/0001_exercise_localization_media.sql`. Drizzle mappings: `LeoWeb/lib/db/schema.ts`. Apply from LeoWeb with `npm run db:exercises:migrate`; already applied to the configured local database on 16 November 2026. The existing auth migration command is separate. See LeoDatabase/README.md for keys, constraints, seed IDs and deletion behavior. The console's generic table catalog discovers the new mapped tables automatically.

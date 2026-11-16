@@ -190,7 +190,7 @@
     "navigation": "Din trening",
     "profile": "Profil",
     "search": "Søk etter øvelser",
-    "searchPlaceholder": "Søk etter øvelse, muskel eller utstyr…",
+    "searchPlaceholder": "Søk etter øvelser…",
     "clearSearch": "Tøm søket",
     "all": "Alle øvelser",
     "showing": "Viser {shown} av {total}",
@@ -256,7 +256,7 @@
     "draft": "Lokalt utkast",
     "draftNote": "Kun forhåndsvisning. Bilder og oversettelser blir på denne siden og fjernes når du forlater den eller laster på nytt.",
     "imageTitle": "Øvelsesbilde",
-    "imageNote": "Ett bilde for alle språk.",
+    "imageNote": "Last opp et bilde for det valgte språket. Flere bilder og videoer er tilgjengelige nedenfor.",
     "chooseImage": "Velg bilde",
     "dropImage": "Slipp et bilde her, eller velg en fil",
     "imageHint": "PNG, JPG eller WebP · opptil 5 MB",
@@ -287,5 +287,22 @@
     "optional": "Valgfritt",
     "textNote": "Hvert språk har sin egen tekst.",
     "imageAlt": "Valgt øvelsesbilde"
+  },
+  "programs": {
+    "title": "Programmer",
+    "eyebrow": "TRENINGSPROGRAMMER",
+    "intro": "Lag en plan for neste del av treningen din.",
+    "create": "Opprett program",
+    "emptyTitle": "Ditt neste program starter her",
+    "emptyBody": "Opprett et program og gi det et navn for å komme i gang.",
+    "back": "Tilbake til programmer",
+    "editorIntro": "Start med et navn. Bygg resten av programmet senere.",
+    "tab": "Program",
+    "name": "Programnavn",
+    "namePlaceholder": "For eksempel, Grunnleggende styrke",
+    "untitled": "Program uten navn",
+    "draft": "Utkast",
+    "draftNote": "Endringene blir bare på denne siden foreløpig.",
+    "nameHint": "Velg et navn som gjør programmet lett å finne."
   }
 }

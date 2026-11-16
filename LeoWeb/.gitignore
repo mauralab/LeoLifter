@@ -41,3 +41,6 @@ next-env.d.ts
 # local IDE settings
 /.idea/
 !.env.example
+
+# Persistent exercise uploads (back up separately)
+.exercise-media/

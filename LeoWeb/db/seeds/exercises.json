@@ -1,0 +1,129 @@
+[
+  {
+    "name": "Pull-up",
+    "aliases": [
+      "Pull-up",
+      "Pull up",
+      "Pull ups",
+      "Pull-ups"
+    ],
+    "ownWeight": true,
+    "additionalWeight": true,
+    "translations": {
+      "en": [
+        "Pull-up",
+        "A vertical pulling exercise using a pull-up bar and body weight."
+      ],
+      "uk": [
+        "Підтягування",
+        "Вертикальна тяга на перекладині з використанням ваги тіла."
+      ],
+      "nb": [
+        "Kroppsheving",
+        "En vertikal trekkøvelse med egen kroppsvekt i en stang."
+      ],
+      "de": [
+        "Klimmzug",
+        "Eine vertikale Zugübung an einer Klimmzugstange mit dem eigenen Körpergewicht."
+      ],
+      "pl": [
+        "Podciąganie",
+        "Ćwiczenie przyciągania w pionie na drążku z wykorzystaniem masy ciała."
+      ]
+    }
+  },
+  {
+    "name": "Bench press",
+    "aliases": [
+      "Bench press",
+      "Barbell bench press"
+    ],
+    "ownWeight": false,
+    "additionalWeight": true,
+    "translations": {
+      "en": [
+        "Bench press",
+        "A barbell pressing exercise performed lying on a flat bench."
+      ],
+      "uk": [
+        "Жим лежачи",
+        "Вправа зі штангою, що виконується лежачи на горизонтальній лаві."
+      ],
+      "nb": [
+        "Benkpress",
+        "En pressøvelse med vektstang utført liggende på en flat benk."
+      ],
+      "de": [
+        "Bankdrücken",
+        "Eine Druckübung mit der Langhantel im Liegen auf einer flachen Bank."
+      ],
+      "pl": [
+        "Wyciskanie leżąc",
+        "Ćwiczenie wyciskania sztangi wykonywane w pozycji leżącej na płaskiej ławce."
+      ]
+    }
+  },
+  {
+    "name": "Squat",
+    "aliases": [
+      "Squat",
+      "Barbell squat",
+      "Back squat"
+    ],
+    "ownWeight": true,
+    "additionalWeight": true,
+    "translations": {
+      "en": [
+        "Squat",
+        "A lower-body exercise using a squatting movement, with optional additional weight."
+      ],
+      "uk": [
+        "Присідання",
+        "Вправа для нижньої частини тіла з рухом присідання та можливим додатковим обтяженням."
+      ],
+      "nb": [
+        "Knebøy",
+        "En øvelse for underkroppen med en knebøybevegelse, med valgfri ekstra belastning."
+      ],
+      "de": [
+        "Kniebeuge",
+        "Eine Übung für den Unterkörper mit einer Kniebeugebewegung und optionalem Zusatzgewicht."
+      ],
+      "pl": [
+        "Przysiad",
+        "Ćwiczenie dolnej części ciała wykonywane ruchem przysiadu, opcjonalnie z dodatkowym ciężarem."
+      ]
+    }
+  },
+  {
+    "name": "Deadlift",
+    "aliases": [
+      "Deadlift",
+      "Barbell deadlift"
+    ],
+    "ownWeight": false,
+    "additionalWeight": true,
+    "translations": {
+      "en": [
+        "Deadlift",
+        "A barbell lifting exercise that starts with the weight on the floor."
+      ],
+      "uk": [
+        "Станова тяга",
+        "Вправа зі штангою, у якій підйом починається з підлоги."
+      ],
+      "nb": [
+        "Markløft",
+        "En løfteøvelse med vektstang der vekten starter på gulvet."
+      ],
+      "de": [
+        "Kreuzheben",
+        "Eine Langhantelübung, bei der das Gewicht vom Boden angehoben wird."
+      ],
+      "pl": [
+        "Martwy ciąg",
+        "Ćwiczenie ze sztangą, w którym podnoszenie ciężaru rozpoczyna się z podłogi."
+      ]
+    }
+  }
+]

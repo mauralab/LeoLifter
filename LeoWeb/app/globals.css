@@ -3296,3 +3296,296 @@ body {
     padding: 10px;
   }
 }
+
+/* Persistent exercise controls extend the original card/editor design. */
+.exercise-card {
+  color: inherit;
+  text-decoration: none;
+  transition:
+    border-color 0.15s,
+    transform 0.15s;
+}
+.exercise-card:hover {
+  border-color: var(--sidebar-primary);
+  transform: translateY(-2px);
+}
+.exercise-image-placeholder {
+  overflow: hidden;
+}
+.exercise-image-placeholder > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.exercise-image-placeholder > .exercise-muscle {
+  z-index: 1;
+}
+.exercise-card-content > p {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.exercise-editor-form > fieldset {
+  min-width: 0;
+  border: 0;
+  padding: 0;
+}
+.exercise-intro > .account-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.exercise-editor-form button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+.editor-advanced {
+  display: grid;
+  gap: 24px;
+}
+.crud-fields label {
+  display: grid;
+  gap: 7px;
+  margin: 16px 0;
+  font-size: 12px;
+}
+.crud-fields input:not([type="checkbox"]),
+.crud-fields textarea,
+.crud-fields select {
+  width: 100%;
+  min-width: 0;
+  background: var(--background);
+  color: var(--foreground);
+  border: 1px solid var(--input);
+  border-radius: 9px;
+  padding: 11px 12px;
+  font-size: 12px;
+}
+.crud-fields textarea {
+  min-height: 100px;
+}
+.crud-fields label:has(input[type="checkbox"]) {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.crud-fields input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--primary);
+}
+.crud-fields h2 {
+  font-size: 16px;
+  font-weight: 650;
+}
+.crud-fields h3 {
+  font-size: 12px;
+  font-weight: 600;
+}
+.crud-translation {
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  padding: 16px;
+  margin: 16px 0;
+}
+.crud-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+.crud-actions button,
+.crud-fields button {
+  cursor: pointer;
+  font-size: 11px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+.crud-preview {
+  max-width: 100%;
+  height: auto;
+  max-height: 260px;
+  border-radius: 8px;
+  object-fit: contain;
+}
+.editor-media-details {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--card);
+}
+.editor-media-details > summary {
+  padding: 22px 24px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+.editor-media-details > summary > span {
+  color: var(--muted-foreground);
+  margin-left: 8px;
+  font-size: 11px;
+}
+.editor-media-details > .editor-panel {
+  border: 0;
+  padding-top: 0;
+}
+.exercise-editor-form .editor-text-fields {
+  min-width: 0;
+}
+.exercise-editor-form .editor-text-fields input,
+.exercise-editor-form .editor-text-fields textarea {
+  width: 100%;
+}
+
+/* Program editor: initial layout */
+.program-empty {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  border: 1px dashed var(--border);
+  border-radius: 18px;
+  padding: 80px 24px;
+  background: var(--card);
+}
+.program-empty-icon,
+.program-panel-icon {
+  display: grid;
+  place-items: center;
+  color: var(--muted-foreground);
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 22px;
+}
+.program-empty h2 {
+  font-family: var(--font-heading);
+  font-size: 25px;
+  font-weight: 550;
+  letter-spacing: -0.5px;
+}
+.program-empty p {
+  color: var(--muted-foreground);
+  font-size: 13px;
+  line-height: 1.8;
+  margin: 12px 0 26px;
+  max-width: 360px;
+}
+.program-editor {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--card);
+  overflow: hidden;
+}
+.program-tabbar {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  background: color-mix(in srgb, var(--muted) 35%, var(--card));
+  min-width: 0;
+}
+.program-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  flex-shrink: 0;
+  border-bottom: 2px solid var(--sidebar-primary);
+  padding: 19px 4px 17px;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.program-tab-title {
+  color: var(--muted-foreground);
+  font-size: 11px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+.program-panel {
+  padding: 36px;
+  min-height: 320px;
+}
+.program-panel-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  margin-bottom: 26px;
+}
+.program-panel .account-field {
+  max-width: 620px;
+}
+.program-field-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 16px;
+  margin-top: 10px;
+  color: var(--muted-foreground);
+  font-size: 11px;
+  line-height: 1.7;
+}
+.program-field-meta small {
+  font-size: inherit;
+}
+.program-field-meta > span {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.program-draft {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 11px;
+  font-size: 11px;
+  flex-shrink: 0;
+  color: var(--muted-foreground);
+  background: var(--card);
+}
+.program-draft > span,
+.program-draft-dot {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 5px;
+  height: 5px;
+  background: var(--sidebar-primary);
+  border-radius: 50%;
+}
+.program-editor-footer {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  padding: 19px 36px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--muted-foreground);
+  line-height: 1.7;
+}
+@media (max-width: 520px) {
+  .program-panel {
+    padding: 24px 20px;
+    min-height: 280px;
+  }
+  .program-tabbar {
+    padding: 0 20px;
+    gap: 18px;
+  }
+  .program-editor-footer {
+    padding: 17px 20px;
+  }
+  .program-empty {
+    padding: 60px 20px;
+  }
+  .training-navigation a {
+    gap: 6px;
+    padding: 9px 10px;
+    font-size: 11px;
+  }
+}

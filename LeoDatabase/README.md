@@ -41,6 +41,46 @@ dotnet ef migrations add InitialCreate --project LeoDatabase --startup-project L
 dotnet ef migrations script --project LeoDatabase --startup-project LeoDatabase
 ```
 
-Review the generated SQL before applying it. If the tables already exist from the earlier SQL scripts, establish a migration baseline against that schema instead of running an initial create migration over it. No database migration has been applied as part of this setup.
+Review the generated SQL before applying it. If the tables already exist from the earlier SQL scripts, establish a migration baseline against that schema instead of running an initial create migration over it. Startup does not apply migrations. The additive exercise upgrade below is separate from establishing an initial EF migration baseline.
 
 Packages: Microsoft.EntityFrameworkCore and Microsoft.EntityFrameworkCore.Relational 10.0.14, Npgsql.EntityFrameworkCore.PostgreSQL 10.0.3, and private design-time tooling 10.0.14. Other application projects need only reference LeoDatabase for runtime use; EF CLI startup projects also need the design package.
+
+## Exercise localization and media
+
+The shared catalog now has the following relationships:
+
+```text
+languages <- exercise_translations -> exercises
+languages <- exercise_media_translations -> exercise_media -> exercises
+```
+
+| Table | Key / important columns |
+| --- | --- |
+| `languages` | `id`, unique `code`, `native_name` |
+| `exercise_translations` | Composite PK `(exercise_id, language_id)`, required `title`, nullable `description`, timestamps |
+| `exercise_media` | `id`, `exercise_id`, `type` (`image` / `video`), 1-based `position`, timestamps |
+| `exercise_media_translations` | Composite PK `(exercise_media_id, language_id)`, required `url`, optional `title`, `description`, `alt_text`, timestamps |
+
+Built-in languages are en (ID 1), uk (2), nb (3), de (4), pl (5). Code is the stable application lookup; IDs are foreign keys. IDs below 100 are reserved for seed entries, and automatically generated custom language IDs start at 100. EF seeds match the SQL migration. The existing `user_settings.language` text column is unchanged.
+
+An exercise has at most one text translation for a language. Each exercise can have multiple image/video items with unique positions across its media collection. Each media item has at most one localized entry per language; use the same URL in several translations for a shared image, or different URLs for localized images/videos. Media files live in application/object/CDN storage; the database stores locations and localized text, not file bytes. Uploading, URL validation/access control and storage management remain application responsibilities. The database enforces trimmed, nonempty titles/URLs, lengths, positive positions, keys and relationships.
+
+Deleting an unused exercise cascades through its text translations, media items and their translations. Existing program/workout references still restrict exercise deletion. Deleting a media item cascades only its localized media entries. A language referenced by either translation table cannot be deleted.
+
+`Exercise.Name` / `Description` and the existing ProgramManager exercise CRUD remain unchanged for compatibility. These fields provide legacy fallback text; the new translation tables hold localized content. There is no automatic synchronization or language inference for legacy text. Future readers can resolve requested language, then English, then legacy fallback fields; the web layout is not connected to the database by this upgrade. Future writes that update fallback text and its matching translation should use one transaction.
+
+EF entities are in `Models/Localization/Language.cs` and `Models/Workout/ExerciseTranslation.cs`, `ExerciseMedia.cs`, `ExerciseMediaTranslation.cs`. DbSets are `Languages`, `ExerciseTranslations`, `ExerciseMedia`, `ExerciseMediaTranslations`. Configuration lives in `Context/Configurations/ExerciseLocalizationConfiguration.cs`; `UseLeoDatabase` registers the native `exercise_media_type` enum for both runtime and tooling.
+
+### Apply to an existing database
+
+`Sql/0001_exercise_localization_media.sql` is a reviewed additive upgrade for the pre-existing schema. It creates only the new enum/tables/indexes and seeds the language lookup. It never drops exercise columns, modifies existing exercise text or creates sample exercise/media rows. It can be rerun safely against its own schema. For a manually managed database, execute the file inside a transaction after the base `exercises` table exists.
+
+On this repository's local setup, the existing LeoWeb PostgreSQL configuration can run it from LeoWeb:
+
+```sh
+npm run db:exercises:migrate
+```
+
+That command takes a transaction-level advisory lock and applies the SQL as one transaction. It is separate from `db:auth:migrate`; authentication upgrades do not apply catalog changes. The upgrade was applied to the configured local database on 16 November 2026. Restart running .NET applications after deployment to load the updated enum mappings/model. New test databases created by EF EnsureCreated receive the same schema/seeds, but EnsureCreated is not a production upgrade strategy.
+
+Validation covered both an old-schema SQL upgrade and a fresh EF-created PostgreSQL database: repeated application without changing existing text, matching constraints, EF and Drizzle round trips, image/video enums, Unicode translations, timestamps, unique language/position rules, FK restrictions and cascade deletion. All fixture records were confined to isolated databases.

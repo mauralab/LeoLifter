@@ -190,7 +190,7 @@
     "navigation": "Twój trening",
     "profile": "Profil",
     "search": "Szukaj ćwiczeń",
-    "searchPlaceholder": "Szukaj ćwiczenia, mięśni lub sprzętu…",
+    "searchPlaceholder": "Szukaj ćwiczeń…",
     "clearSearch": "Wyczyść wyszukiwanie",
     "all": "Wszystkie ćwiczenia",
     "showing": "Wyświetlono {shown} z {total}",
@@ -256,7 +256,7 @@
     "draft": "Lokalny szkic",
     "draftNote": "Tylko podgląd. Zdjęcia i tłumaczenia pozostają na tej stronie i znikają po jej opuszczeniu lub odświeżeniu.",
     "imageTitle": "Zdjęcie ćwiczenia",
-    "imageNote": "Jedno zdjęcie dla wszystkich języków.",
+    "imageNote": "Prześlij obraz dla wybranego języka. Więcej obrazów i filmów znajdziesz poniżej.",
     "chooseImage": "Wybierz zdjęcie",
     "dropImage": "Przeciągnij zdjęcie tutaj lub wybierz plik",
     "imageHint": "PNG, JPG lub WebP · do 5 MB",
@@ -287,5 +287,22 @@
     "optional": "Opcjonalne",
     "textNote": "Każdy język ma osobny tekst.",
     "imageAlt": "Wybrane zdjęcie ćwiczenia"
+  },
+  "programs": {
+    "title": "Programy",
+    "eyebrow": "PROGRAMY TRENINGOWE",
+    "intro": "Zaplanuj kolejny etap swoich treningów.",
+    "create": "Utwórz program",
+    "emptyTitle": "Twój kolejny program zaczyna się tutaj",
+    "emptyBody": "Utwórz program i nadaj mu nazwę, aby rozpocząć.",
+    "back": "Powrót do programów",
+    "editorIntro": "Zacznij od nazwy. Resztę programu możesz dodać później.",
+    "tab": "Program",
+    "name": "Nazwa programu",
+    "namePlaceholder": "Na przykład, Podstawy siły",
+    "untitled": "Program bez nazwy",
+    "draft": "Szkic",
+    "draftNote": "Zmiany na razie pozostają tylko na tej stronie.",
+    "nameHint": "Wybierz nazwę, dzięki której łatwo znajdziesz program."
   }
 }

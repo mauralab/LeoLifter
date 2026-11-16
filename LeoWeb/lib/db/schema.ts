@@ -1,5 +1,7 @@
 import {
   bigint,
+  boolean,
+  primaryKey,
   integer,
   date,
   numeric,
@@ -119,3 +121,75 @@ export const authRateLimits = pgTable("auth_rate_limits", {
     .defaultNow(),
   attempts: integer("attempts").notNull(),
 })
+
+// Shared exercise catalog. Schema upgrade is owned by LeoDatabase/Sql.
+const exerciseType = pgEnum("exercise_type", [
+  "repetitions",
+  "distance",
+  "duration",
+])
+const exerciseMediaType = pgEnum("exercise_media_type", ["image", "video"])
+export const languages = pgTable("languages", {
+  id: bigint("id", { mode: "bigint" })
+    .primaryKey()
+    .generatedByDefaultAsIdentity({ startWith: 100 }),
+  code: varchar("code", { length: 35 }).notNull().unique(),
+  nativeName: varchar("native_name", { length: 100 }).notNull(),
+})
+export const exercises = pgTable("exercises", {
+  id: bigint("id", { mode: "bigint" })
+    .primaryKey()
+    .generatedByDefaultAsIdentity(),
+  name: text("name").notNull(),
+  description: text("description"),
+  type: exerciseType("type").notNull(),
+  includesOwnWeight: boolean("includes_own_weight").notNull().default(false),
+  includesAdditionalWeight: boolean("includes_additional_weight")
+    .notNull()
+    .default(false),
+})
+export const exerciseTranslations = pgTable(
+  "exercise_translations",
+  {
+    exerciseId: bigint("exercise_id", { mode: "bigint" })
+      .notNull()
+      .references(() => exercises.id, { onDelete: "cascade" }),
+    languageId: bigint("language_id", { mode: "bigint" })
+      .notNull()
+      .references(() => languages.id, { onDelete: "restrict" }),
+    title: text("title").notNull(),
+    description: text("description"),
+    ...timestamps(),
+  },
+  (table) => [primaryKey({ columns: [table.exerciseId, table.languageId] })]
+)
+export const exerciseMedia = pgTable("exercise_media", {
+  id: bigint("id", { mode: "bigint" })
+    .primaryKey()
+    .generatedByDefaultAsIdentity(),
+  exerciseId: bigint("exercise_id", { mode: "bigint" })
+    .notNull()
+    .references(() => exercises.id, { onDelete: "cascade" }),
+  type: exerciseMediaType("type").notNull(),
+  position: integer("position").notNull(),
+  ...timestamps(),
+})
+export const exerciseMediaTranslations = pgTable(
+  "exercise_media_translations",
+  {
+    exerciseMediaId: bigint("exercise_media_id", { mode: "bigint" })
+      .notNull()
+      .references(() => exerciseMedia.id, { onDelete: "cascade" }),
+    languageId: bigint("language_id", { mode: "bigint" })
+      .notNull()
+      .references(() => languages.id, { onDelete: "restrict" }),
+    url: varchar("url", { length: 2048 }).notNull(),
+    title: text("title"),
+    description: text("description"),
+    altText: text("alt_text"),
+    ...timestamps(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.exerciseMediaId, table.languageId] }),
+  ]
+)
