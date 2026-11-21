@@ -84,3 +84,9 @@ npm run db:exercises:migrate
 That command takes a transaction-level advisory lock and applies the SQL as one transaction. It is separate from `db:auth:migrate`; authentication upgrades do not apply catalog changes. The upgrade was applied to the configured local database on 16 November 2026. Restart running .NET applications after deployment to load the updated enum mappings/model. New test databases created by EF EnsureCreated receive the same schema/seeds, but EnsureCreated is not a production upgrade strategy.
 
 Validation covered both an old-schema SQL upgrade and a fresh EF-created PostgreSQL database: repeated application without changing existing text, matching constraints, EF and Drizzle round trips, image/video enums, Unicode translations, timestamps, unique language/position rules, FK restrictions and cascade deletion. All fixture records were confined to isolated databases.
+
+## Optional program sets
+
+`Sql/0003_optional_program_sets.sql` adds `program_set_exercises.is_optional boolean NOT NULL DEFAULT false` without altering existing targets. Run `npm run db:programs:migrate` from LeoWeb to apply this and the editor metadata upgrade transactionally. Safe to repeat. Fresh EF-created databases receive the same column/default through ProgramConfiguration.
+
+Each ProgramSetExercise still represents one physical set. For a prescription of 3–5 identical sets, three rows have IsOptional=false and the following two have IsOptional=true. Fixed counts use only required rows. Rep ranges already exist as TargetRepsMin/TargetRepsMax; equal bounds represent one fixed rep count. LeoCore's SetExerciseDetails accepts IsOptional as its final optional parameter (default false).

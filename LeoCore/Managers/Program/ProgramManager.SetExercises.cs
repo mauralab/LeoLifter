@@ -94,6 +94,7 @@ public sealed partial class ProgramManager
     {
         entity.ProgramDaySetId = details.ProgramDaySetId;
         entity.Position = details.Position;
+        entity.IsOptional = details.IsOptional;
         entity.TargetRepsMin = details.TargetRepsMin;
         entity.TargetRepsMax = details.TargetRepsMax;
         entity.ValueMin = details.ValueMin;

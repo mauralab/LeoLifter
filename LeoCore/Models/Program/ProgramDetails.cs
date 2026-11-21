@@ -12,7 +12,7 @@ public sealed record SetDetails(long ProgramGroupId, int Position, long Exercise
 public sealed record SetExerciseDetails(
     long ProgramDaySetId, int Position,
     int? TargetRepsMin = null, int? TargetRepsMax = null,
-    decimal? ValueMin = null, decimal? ValueMax = null, ProgramValueUnit? ValueUnit = null);
+    decimal? ValueMin = null, decimal? ValueMax = null, ProgramValueUnit? ValueUnit = null, bool IsOptional = false);
 public sealed record ExerciseDetails(
     string Name, ExerciseType Type, bool IncludesOwnWeight = false,
     bool IncludesAdditionalWeight = false, string? Description = null);

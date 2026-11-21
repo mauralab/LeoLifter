@@ -10,6 +10,7 @@ public class ProgramSetExercise
     public long Id { get; set; }
     public long ProgramDaySetId { get; set; }
     public int Position { get; set; } = 1;
+    public bool IsOptional { get; set; }
     public int? TargetRepsMin { get; set; }
     public int? TargetRepsMax { get; set; }
     public decimal? ValueMin { get; set; }

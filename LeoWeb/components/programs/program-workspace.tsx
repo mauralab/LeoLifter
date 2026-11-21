@@ -1,23 +1,51 @@
 "use client"
+import type { CanvasBlock, ExerciseOption } from "./canvas-layout"
+import { ProgramSaveStatus } from "./program-save-status"
+import { ProgramCanvas } from "./program-canvas"
 import { useState } from "react"
 import Link from "next/link"
+import { useProgramAutosave } from "./use-program-autosave"
 import Image from "next/image"
 import { ArrowLeft, ArrowUpRight, Layers3, Plus } from "lucide-react"
 import { HeaderPreferences } from "@/components/landing/header-preferences"
 import { TrainingNavigation } from "@/components/navigation/training-navigation"
+import type { SavedProgram, ProgramSummary } from "@/lib/programs/validation"
 import type { Locale, Messages } from "@/lib/i18n"
 
 export function ProgramWorkspace({
   locale,
   messages,
   editing = false,
+  catalog = [],
+  initialProgram,
+  programs = [],
 }: {
   locale: Locale
   messages: Messages
   editing?: boolean
+  catalog?: ExerciseOption[]
+  initialProgram?: SavedProgram
+  programs?: ProgramSummary[]
 }) {
-  const [name, setName] = useState("")
+  const [query, setQuery] = useState("")
+  const filteredPrograms = programs.filter((p) =>
+    p.name.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase())
+  )
+  const [name, setName] = useState(initialProgram?.name ?? "")
+  const [blocks, setBlocks] = useState<CanvasBlock[]>(
+    initialProgram?.blocks ?? []
+  )
   const t = messages.programs
+  const { saved, busy, error, errorKind, dirty, skipped } = useProgramAutosave({
+    name,
+    blocks,
+    initialProgram,
+    editing,
+    locale,
+    errorMessage: t.saveError,
+  })
+  const [page, setPage] = useState(1)
+  const pageCount = Math.max(1, Math.ceil(filteredPrograms.length / 12))
   return (
     <main className="account-page programs-page">
       <header className="account-topbar exercises-topbar">
@@ -34,8 +62,11 @@ export function ProgramWorkspace({
         />
         <HeaderPreferences locale={locale} copy={messages} />
       </header>
-      <div className="exercise-container">
+      <div
+        className={`exercise-container ${editing ? "program-builder-container" : ""}`}
+      >
         <Link
+          prefetch={false}
           className="account-back"
           href={editing ? `/${locale}/programs` : `/${locale}`}
         >
@@ -45,16 +76,12 @@ export function ProgramWorkspace({
         <div className="exercise-intro">
           <div>
             <p className="account-eyebrow">{t.eyebrow}</p>
-            <h1>{editing ? t.create : t.title}</h1>
+            <h1>{editing ? (saved ? t.edit : t.create) : t.title}</h1>
             <p>{editing ? t.editorIntro : t.intro}</p>
           </div>
-          {editing ? (
-            <span className="program-draft">
-              <span />
-              {t.draft}
-            </span>
-          ) : (
+          {editing ? null : (
             <Link
+              prefetch={false}
               className="account-primary exercise-create-link"
               href={`/${locale}/programs/create`}
             >
@@ -64,7 +91,10 @@ export function ProgramWorkspace({
           )}
         </div>
         {editing ? (
-          <section className="program-editor" aria-label={t.create}>
+          <section
+            className="program-editor"
+            aria-label={saved ? t.edit : t.create}
+          >
             <div className="program-tabbar" role="tablist" aria-label={t.title}>
               <button
                 id="program-general-tab"
@@ -83,13 +113,10 @@ export function ProgramWorkspace({
             </div>
             <div
               id="program-general-panel"
-              className="program-panel"
+              className="program-panel program-name-panel"
               role="tabpanel"
               aria-labelledby="program-general-tab"
             >
-              <div className="program-panel-icon">
-                <Layers3 size={25} strokeWidth={1.4} aria-hidden="true" />
-              </div>
               <div className="account-field">
                 <label htmlFor="program-name">{t.name}</label>
                 <input
@@ -107,10 +134,90 @@ export function ProgramWorkspace({
                 </div>
               </div>
             </div>
+            <ProgramCanvas
+              copy={t}
+              catalog={catalog}
+              programName={name}
+              blocks={blocks}
+              setBlocks={setBlocks}
+              saveStatus={
+                <ProgramSaveStatus
+                  busy={busy}
+                  error={error}
+                  errorKind={errorKind}
+                  dirty={dirty}
+                  skipped={skipped}
+                  copy={t}
+                />
+              }
+            />
+            {error && (
+              <p role="alert" className="account-error">
+                {error}
+              </p>
+            )}
             <footer className="program-editor-footer">
               <span className="program-draft-dot" />
-              {t.draftNote}
+              {skipped ? t.waitingForValid : t.autosaveNote}
             </footer>
+          </section>
+        ) : programs.length ? (
+          <section aria-label={t.myPrograms}>
+            <div className="program-list-heading">
+              <h2>
+                {t.myPrograms} <small>({programs.length})</small>
+              </h2>
+              <input
+                type="search"
+                aria-label={t.searchPrograms}
+                placeholder={t.searchPrograms}
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value)
+                  setPage(1)
+                }}
+              />
+            </div>
+            <div className="program-list">
+              {filteredPrograms
+                .slice((page - 1) * 12, page * 12)
+                .map((program) => (
+                  <Link
+                    prefetch={false}
+                    className="program-list-item account-secondary"
+                    key={program.id}
+                    href={`/${locale}/programs/${program.id}/edit`}
+                  >
+                    <Layers3 size={20} />
+                    <span>{program.name}</span>
+                    <ArrowUpRight size={16} />
+                  </Link>
+                ))}
+              {!filteredPrograms.length && <p>{t.noProgramsFound}</p>}
+              {pageCount > 1 && (
+                <nav className="program-list-pagination" aria-label={t.title}>
+                  <button
+                    type="button"
+                    className="account-secondary"
+                    disabled={page === 1}
+                    onClick={() => setPage(page - 1)}
+                  >
+                    {t.previous}
+                  </button>
+                  <span>
+                    {page} / {pageCount}
+                  </span>
+                  <button
+                    type="button"
+                    className="account-secondary"
+                    disabled={page === pageCount}
+                    onClick={() => setPage(page + 1)}
+                  >
+                    {t.next}
+                  </button>
+                </nav>
+              )}
+            </div>
           </section>
         ) : (
           <section
@@ -123,6 +230,7 @@ export function ProgramWorkspace({
             <h2 id="program-empty-heading">{t.emptyTitle}</h2>
             <p>{t.emptyBody}</p>
             <Link
+              prefetch={false}
               className="account-secondary exercise-create-link"
               href={`/${locale}/programs/create`}
             >

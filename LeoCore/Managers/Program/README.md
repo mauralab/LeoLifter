@@ -64,3 +64,5 @@ Positions are 1-based stored indexes (DayIndex for days). A destination must be 
 The implementation temporarily parks changed items at unused positive indexes, saves that phase, then saves the final positions inside the same transaction. This avoids transient violations of the immediate unique indexes and positive-position checks, without schema changes. A savepoint protects the entire operation when the caller supplies a transaction. If saving fails, dispose that unit-of-work scope/context before retrying so tracked temporary values cannot be reused.
 
 Every Move call persists immediately. To offer a frontend Save button, keep draft changes locally and invoke moves on Save. Multiple independent calls are separate transactions unless the host explicitly groups them in one transaction; batch-save APIs can be added when the editor needs them.
+
+SetExerciseDetails also accepts `IsOptional` (default false). Each target remains one physical set; a 3–5 prescription is three required targets followed by two optional targets. Preserve this flag when editing optional targets.

@@ -27,11 +27,20 @@ export async function POST(request: NextRequest) {
     validateAuthConfiguration()
     if (!requireSameOrigin(request))
       return new NextResponse(null, { status: 403 })
-    locale = requestLocale(await readAuthForm(request))
+    const form = await readAuthForm(request)
+    locale = requestLocale(form)
+    const candidate = form.get("returnTo")
+    const returnTo =
+      typeof candidate === "string" &&
+      new RegExp(
+        `^/${locale}/programs(?:/create|/[1-9][0-9]{0,18}/edit)?$`
+      ).test(candidate)
+        ? candidate
+        : `/${locale}/profile`
     const token = request.cookies.get(REFRESH_COOKIE)?.value
     if (!token) throw new AuthError("Please sign in through the bot.")
     const session = await rotateRefreshToken(token)
-    const response = privateRedirect(`/${locale}/profile`)
+    const response = privateRedirect(returnTo)
     await setSessionCookies(response, session)
     return response
   } catch (error) {

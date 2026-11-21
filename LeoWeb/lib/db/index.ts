@@ -4,7 +4,7 @@ import { drizzle } from "drizzle-orm/node-postgres"
 import { AuthConfigurationError } from "@/lib/auth/errors"
 
 const globalForDb = globalThis as unknown as { leoPool?: Pool }
-export function getDb() {
+export function getPool() {
   if (!process.env.DATABASE_URL)
     throw new AuthConfigurationError("Configure LeoWeb DATABASE_URL.")
   const pool = (globalForDb.leoPool ??= new Pool({
@@ -14,5 +14,9 @@ export function getDb() {
   }))
   if (!pool.listenerCount("error"))
     pool.on("error", () => console.error("Database pool connection lost."))
-  return drizzle(pool)
+  return pool
+}
+
+export function getDb() {
+  return drizzle(getPool())
 }

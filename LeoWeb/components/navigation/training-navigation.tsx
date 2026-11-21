@@ -21,6 +21,7 @@ export function TrainingNavigation({
       </Link>
       <Link
         href={`/${locale}/programs`}
+        prefetch={false}
         aria-current={current === "programs" ? "page" : undefined}
       >
         <Layers3 size={16} aria-hidden="true" />

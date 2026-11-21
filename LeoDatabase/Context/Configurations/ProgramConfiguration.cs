@@ -87,6 +87,7 @@ internal static class ProgramConfiguration
                     "(value_min IS NULL AND value_max IS NULL AND value_unit IS NULL) OR " +
                     "(value_min IS NOT NULL AND value_max IS NOT NULL AND value_unit IS NOT NULL AND value_min >= 0 AND value_max >= value_min)");
             });
+            e.Property(x => x.IsOptional).HasDefaultValue(false);
             e.Property(x => x.ValueMin).HasPrecision(12, 3);
             e.Property(x => x.ValueMax).HasPrecision(12, 3);
             e.HasIndex(x => new { x.ProgramDaySetId, x.Position }).IsUnique();
