@@ -378,3 +378,27 @@ export async function saveProgram(
     c.release()
   }
 }
+
+/** Read-only, ownership-scoped source for creating a local workout draft. */
+export async function loadProgramForWorkout(id: string, userId: string) {
+  const c = await getPool().connect()
+  try {
+    await c.query("BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY")
+    const p = await read(c, id, userId)
+    const result = {
+      id: p.id,
+      name: p.name,
+      blocks: p.blocks,
+      dayIds: Object.fromEntries(
+        p.nodes.filter((n) => n.kind === "day").map((n) => [n.id, n.rows[0]])
+      ),
+    }
+    await c.query("COMMIT")
+    return result
+  } catch (e) {
+    await c.query("ROLLBACK")
+    throw e
+  } finally {
+    c.release()
+  }
+}

@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Dumbbell, Layers3, UserRound } from "lucide-react"
+import { Dumbbell, Layers3, UserRound, CalendarDays } from "lucide-react"
 import { getMessages, type Locale, type Messages } from "@/lib/i18n"
 export function TrainingNavigation({
   locale,
@@ -8,7 +8,7 @@ export function TrainingNavigation({
 }: {
   locale: Locale
   copy: Messages["exercises"]
-  current: "exercises" | "profile" | "programs"
+  current: "exercises" | "profile" | "programs" | "workouts"
 }) {
   return (
     <nav className="training-navigation" aria-label={copy.navigation}>
@@ -26,6 +26,14 @@ export function TrainingNavigation({
       >
         <Layers3 size={16} aria-hidden="true" />
         {getMessages(locale).programs.title}
+      </Link>
+      <Link
+        href={`/${locale}/workouts`}
+        prefetch={false}
+        aria-current={current === "workouts" ? "page" : undefined}
+      >
+        <CalendarDays size={16} aria-hidden="true" />
+        {getMessages(locale).workouts.title}
       </Link>
       <Link
         href={`/${locale}/profile`}
