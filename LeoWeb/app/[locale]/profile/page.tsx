@@ -27,6 +27,7 @@ export default async function ProfilePage({
       : 1
   const tab =
     query.tab === "settings" ||
+    query.tab === "telegram" ||
     query.tab === "password" ||
     query.tab === "sessions"
       ? query.tab

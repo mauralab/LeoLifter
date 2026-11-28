@@ -23,7 +23,7 @@ export default async function Page({ params }: Props) {
         fields={{ locale, returnTo: `/${locale}/programs` }}
       />
     )
-  const programs = await listPrograms(user.userId)
+  const programs = await listPrograms(user.userId,locale)
   return (
     <ProgramWorkspace
       programs={programs}

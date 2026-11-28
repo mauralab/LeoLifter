@@ -32,6 +32,36 @@ export const blockInput = z.object({
   valueMax: z.string().max(30).optional(),
   valueUnit: z.string().max(30).optional(),
 })
+export const programDescriptionInput = z.object({
+  languageId: z
+    .string()
+    .regex(/^[1-9]\d{0,18}$/)
+    .refine(
+      (v) =>
+        /^[1-9]\d{0,18}$/.test(v) && BigInt(v) <= BigInt("9223372036854775807")
+    ),
+  description: z.string().max(20000),
+  imageUrl: z
+    .string()
+    .max(2048)
+    .refine(
+      (v) =>
+        v === "" ||
+        /^\/api\/programs\/files\/[1-9]\d{0,18}\/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\.(png|jpg|webp)$/.test(
+          v
+        ),
+      "Upload a program image."
+    ),
+  imageAlt: z.string().max(300),
+})
+export const programDescriptionsInput = z
+  .array(programDescriptionInput)
+  .max(100)
+  .refine(
+    (rows) => new Set(rows.map((r) => r.languageId)).size === rows.length,
+    "Duplicate description languages."
+  )
+export type ProgramDescription = z.infer<typeof programDescriptionInput>
 export const programInput = z
   .object({
     name: z.string().trim().min(1, "Enter a program name.").max(200),
@@ -40,6 +70,7 @@ export const programInput = z
       .regex(/^[a-f0-9]{64}$/)
       .optional(),
     blocks: z.array(blockInput).max(1000),
+    descriptions: programDescriptionsInput.optional(),
   })
   .superRefine(({ blocks }, ctx) => {
     const fail = (message: string) => ctx.addIssue({ code: "custom", message })
@@ -84,5 +115,12 @@ export type SavedProgram = {
   name: string
   revision: string
   blocks: CanvasBlock[]
+  descriptions: ProgramDescription[]
 }
-export type ProgramSummary = { id: string; name: string }
+export type ProgramSummary = {
+  id: string
+  name: string
+  description?: string | null
+  imageUrl?: string | null
+  imageAlt?: string | null
+}

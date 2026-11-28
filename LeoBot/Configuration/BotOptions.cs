@@ -5,7 +5,6 @@ public sealed class BotOptions
     public const string SectionName = "Telegram";
     public string BotToken { get; set; } = "";
     public string WebAuthUrl { get; set; } = "#";
-    public string AuthLinkSecret { get; set; } = "";
 
     public static bool IsValidToken(string value) =>
         !string.IsNullOrWhiteSpace(value) && System.Text.RegularExpressions.Regex.IsMatch(value, @"^\d+:[A-Za-z0-9_-]+$");

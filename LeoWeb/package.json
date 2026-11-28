@@ -13,7 +13,8 @@
     "db:auth:migrate": "node scripts/migrate-auth.mjs",
     "db:exercises:migrate": "node scripts/migrate-exercises.mjs",
     "db:exercises:seed": "node scripts/seed-exercises.mjs",
-    "db:programs:migrate": "node scripts/migrate-programs.mjs"
+    "db:programs:migrate": "node scripts/migrate-programs.mjs",
+    "db:workouts:migrate": "node scripts/migrate-workouts.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

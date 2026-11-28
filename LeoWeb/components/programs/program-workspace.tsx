@@ -1,5 +1,8 @@
 "use client"
 import type { CanvasBlock, ExerciseOption } from "./canvas-layout"
+import { ProgramCard } from "./program-card"
+import { ProgramDescriptionEditor } from "./program-description-editor"
+import type { ProgramDescription } from "@/lib/programs/validation"
 import { ProgramSaveStatus } from "./program-save-status"
 import { ProgramCanvas } from "./program-canvas"
 import { useState } from "react"
@@ -19,6 +22,7 @@ export function ProgramWorkspace({
   catalog = [],
   initialProgram,
   programs = [],
+  languages = [],
 }: {
   locale: Locale
   messages: Messages
@@ -26,6 +30,7 @@ export function ProgramWorkspace({
   catalog?: ExerciseOption[]
   initialProgram?: SavedProgram
   programs?: ProgramSummary[]
+  languages?: { id: string; code: string; nativeName: string }[]
 }) {
   const [query, setQuery] = useState("")
   const filteredPrograms = programs.filter((p) =>
@@ -35,10 +40,14 @@ export function ProgramWorkspace({
   const [blocks, setBlocks] = useState<CanvasBlock[]>(
     initialProgram?.blocks ?? []
   )
+  const [descriptions, setDescriptions] = useState<ProgramDescription[]>(
+    initialProgram?.descriptions ?? []
+  )
   const t = messages.programs
   const { saved, busy, error, errorKind, dirty, skipped } = useProgramAutosave({
     name,
     blocks,
+    descriptions,
     initialProgram,
     editing,
     locale,
@@ -134,6 +143,13 @@ export function ProgramWorkspace({
                 </div>
               </div>
             </div>
+            <ProgramDescriptionEditor
+              locale={locale}
+              copy={messages}
+              languages={languages}
+              descriptions={descriptions}
+              onChange={setDescriptions}
+            />
             <ProgramCanvas
               copy={t}
               catalog={catalog}
@@ -178,20 +194,16 @@ export function ProgramWorkspace({
                 }}
               />
             </div>
-            <div className="program-list">
+            <div className="exercise-grid program-card-grid">
               {filteredPrograms
                 .slice((page - 1) * 12, page * 12)
                 .map((program) => (
-                  <Link
-                    prefetch={false}
-                    className="program-list-item account-secondary"
+                  <ProgramCard
                     key={program.id}
+                    program={program}
+                    copy={t}
                     href={`/${locale}/programs/${program.id}/edit`}
-                  >
-                    <Layers3 size={20} />
-                    <span>{program.name}</span>
-                    <ArrowUpRight size={16} />
-                  </Link>
+                  />
                 ))}
               {!filteredPrograms.length && <p>{t.noProgramsFound}</p>}
               {pageCount > 1 && (

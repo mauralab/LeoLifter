@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { signInTelegram } from "@/lib/auth/store"
-import { telegramFields, verifyTelegramLink } from "@/lib/auth/telegram-link"
+import { verifyTelegramCode } from "@/lib/auth/telegram-link"
 import {
   appOrigin,
   privateRedirect,
@@ -21,14 +21,9 @@ export async function POST(request: Request) {
       return new NextResponse(null, { status: 413 })
     const form = await readAuthForm(request)
     locale = requestLocale(form)
-    const input = Object.fromEntries(
-      telegramFields.map((key) => [
-        key,
-        form.getAll(key).length === 1 ? form.get(key) : null,
-      ])
-    )
-    const link = verifyTelegramLink(input)
-    const session = await signInTelegram(link, locale)
+    const code = verifyTelegramCode(form.getAll("code").length === 1 ? form.get("code") : null)
+    const session = await signInTelegram(code)
+    locale = session.locale
     const response = privateRedirect(`/${locale}/profile`)
     await setSessionCookies(response, session)
     return response

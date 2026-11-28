@@ -29,9 +29,18 @@ try {
       "utf8"
     )
   )
+  await client.query(
+    await readFile(
+      new URL(
+        "../../LeoDatabase/Sql/0005_program_descriptions.sql",
+        import.meta.url
+      ),
+      "utf8"
+    )
+  )
   await client.query("COMMIT")
   console.log(
-    "Program editor metadata and optional-set schema applied; existing programs preserved."
+    "Program editor, optional-set and localized-description schema applied; existing programs preserved."
   )
 } catch {
   await client.query("ROLLBACK").catch(() => {})

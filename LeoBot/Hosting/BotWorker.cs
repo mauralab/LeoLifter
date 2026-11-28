@@ -41,7 +41,7 @@ public sealed class BotWorker(ITelegramBotClient bot, BotUpdateHandler handler,
                 });
             await bot.ReceiveAsync(receiver, new ReceiverOptions
             {
-                AllowedUpdates = [UpdateType.Message, UpdateType.CallbackQuery]
+                AllowedUpdates = [UpdateType.Message, UpdateType.CallbackQuery, UpdateType.MyChatMember]
             }, stoppingToken);
         }
         catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { }

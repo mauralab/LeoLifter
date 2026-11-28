@@ -2,7 +2,7 @@ import { createHash, randomBytes } from "node:crypto"
 import { and, eq, gt, isNull, sql } from "drizzle-orm"
 import { getDb } from "@/lib/db"
 import {
-  telegramLoginLinks,
+  telegramSigninLinks,
   users,
   userTelegram,
   userProfiles,
@@ -10,11 +10,7 @@ import {
   userSessions,
 } from "@/lib/db/schema"
 import { AuthError } from "./errors"
-import {
-  LINK_LIFETIME_SECONDS,
-  type TelegramLink,
-  verifyTelegramLink,
-} from "./telegram-link"
+import { verifyTelegramCode } from "./telegram-link"
 
 export const REFRESH_LIFETIME_SECONDS = 30 * 24 * 60 * 60
 // Match LeoCore's SHA-256 / uppercase-hex refresh-token storage format.
@@ -23,43 +19,39 @@ export const hashToken = (value: string) =>
 export const randomRefreshToken = () =>
   randomBytes(32).toString("hex").toUpperCase()
 
-export async function signInTelegram(link: TelegramLink, locale: string) {
-  // Recheck expiry/signature at redemption time, not just during page rendering.
-  verifyTelegramLink(link)
+export async function signInTelegram(code: string) {
+  verifyTelegramCode(code)
   const db = getDb()
   const refreshToken = randomRefreshToken()
   const now = new Date()
   const expiresAt = new Date(now.getTime() + REFRESH_LIFETIME_SECONDS * 1000)
   const result = await db.transaction(async (tx) => {
-    const consumed = await tx
-      .insert(telegramLoginLinks)
-      .values({
-        nonceHash: hashToken(link.nonce),
-        expiresAt: new Date(
-          (Number(link.iat) + LINK_LIFETIME_SECONDS + 30) * 1000
-        ),
-      })
-      .onConflictDoNothing()
-      .returning({ nonce: telegramLoginLinks.nonceHash })
-    if (!consumed.length)
-      throw new AuthError(
-        "This link has already been used. Request a new one with /start."
-      )
+    // Redemption and account/session creation commit together. Concurrent replays lose this update.
+    const [link] = await tx.update(telegramSigninLinks)
+      .set({ consumedAt: now })
+      .where(and(
+        eq(telegramSigninLinks.codeHash, hashToken(code)),
+        isNull(telegramSigninLinks.consumedAt),
+        gt(telegramSigninLinks.expiresAt, sql`CURRENT_TIMESTAMP`)
+      ))
+      .returning()
+    if (!link) throw new AuthError("This link is invalid, expired or already used. Request a new one with /start.")
+    const locale = link.locale
     // Serialize sign-ups for one Telegram identity; two different valid links cannot create duplicate users.
     await tx.execute(
-      sql`select pg_advisory_xact_lock(hashtextextended(${link.tg_id}, 0))`
+      sql`select pg_advisory_xact_lock(hashtextextended(${link.telegramId.toString()}, 0))`
     )
     const [existing] = await tx
       .select({ userId: userTelegram.userId })
       .from(userTelegram)
-      .where(eq(userTelegram.telegramId, BigInt(link.tg_id)))
+      .where(eq(userTelegram.telegramId, link.telegramId))
       .limit(1)
     let userId = existing?.userId
     if (userId === undefined) {
       const [created] = await tx
         .insert(users)
         .values({
-          nickname: link.tg_username || `telegram_${link.tg_id}`,
+          nickname: link.telegramUsername || `telegram_${link.telegramId.toString()}`,
           createdAt: now,
           updatedAt: now,
         })
@@ -67,13 +59,13 @@ export async function signInTelegram(link: TelegramLink, locale: string) {
       userId = created.id
       await tx.insert(userTelegram).values({
         userId,
-        telegramId: BigInt(link.tg_id),
-        chatId: BigInt(link.chat_id),
+        telegramId: link.telegramId,
+        chatId: link.chatId,
       })
     } else {
       await tx
         .update(userTelegram)
-        .set({ chatId: BigInt(link.chat_id) })
+        .set({ chatId: link.chatId })
         .where(eq(userTelegram.userId, userId))
     }
     // Preserve all existing nicknames/profile/preferences; initialize missing personal records.
@@ -96,7 +88,7 @@ export async function signInTelegram(link: TelegramLink, locale: string) {
         updatedAt: now,
       })
       .returning({ id: userSessions.id })
-    return { userId: userId.toString(), sessionId: session.id.toString() }
+    return { userId: userId.toString(), sessionId: session.id.toString(), locale }
   })
   return { ...result, refreshToken, expiresAt }
 }

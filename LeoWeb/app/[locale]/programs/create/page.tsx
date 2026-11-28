@@ -69,6 +69,7 @@ export default async function Page({ params }: Props) {
   }))
   return (
     <ProgramWorkspace
+      languages={languages}
       initialProgram={initialProgram}
       catalog={catalog}
       key={locale}

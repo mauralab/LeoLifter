@@ -1,3 +1,4 @@
+using LeoBot.Localization;
 using LeoBot.Authentication;
 using LeoBot.Configuration;
 using Microsoft.Extensions.Options;
@@ -12,14 +13,14 @@ public sealed class LandingMessageFactory(IOptions<BotOptions> options, Telegram
 {
     public const string AuthPlaceholderCallback = "auth:coming-soon";
 
-    public LandingMessage Create(string? languageCode, long telegramId, string? username, long chatId)
+    public async Task<LandingMessage> CreateAsync(string? languageCode, long telegramId, string? username, long chatId, CancellationToken ct = default)
     {
         var copy = GetCopy(languageCode);
         var button = options.Value.HasAuthUrl
-            ? InlineKeyboardButton.WithUrl(copy.Button, links.Create(telegramId, username, chatId))
+            ? InlineKeyboardButton.WithUrl(copy.Button, await links.CreateAsync(telegramId, username, chatId, languageCode, ct))
             : InlineKeyboardButton.WithCallbackData(copy.Button, AuthPlaceholderCallback);
         var text = options.Value.HasAuthUrl ? ActiveText(languageCode) : copy.Text;
-        return new(text, new InlineKeyboardMarkup(button));
+        return new(text, new InlineKeyboardMarkup(new[] { new[] { button }, new[] { InlineKeyboardButton.WithCallbackData(LanguagePicker.ChangeLabel(languageCode), LanguagePicker.ChangeCallback) } }));
     }
 
     private static string ActiveText(string? languageCode) => languageCode?.Split('-', '_')[0].ToLowerInvariant() switch

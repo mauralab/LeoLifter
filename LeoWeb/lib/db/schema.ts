@@ -1,4 +1,5 @@
 import {
+  uuid,
   bigint,
   boolean,
   primaryKey,
@@ -193,3 +194,123 @@ export const exerciseMediaTranslations = pgTable(
     primaryKey({ columns: [table.exerciseMediaId, table.languageId] }),
   ]
 )
+
+export const programs = pgTable("programs", {
+  id: bigint("id", { mode: "bigint" })
+    .primaryKey()
+    .generatedByDefaultAsIdentity(),
+  name: text("name").notNull(),
+  authorId: bigint("author_id", { mode: "bigint" }).references(() => users.id, {
+    onDelete: "restrict",
+  }),
+  isPublic: boolean("is_public").notNull().default(false),
+  ...timestamps(),
+})
+export const programDescriptions = pgTable(
+  "program_descriptions",
+  {
+    programId: bigint("program_id", { mode: "bigint" })
+      .notNull()
+      .references(() => programs.id, { onDelete: "cascade" }),
+    languageId: bigint("language_id", { mode: "bigint" })
+      .notNull()
+      .references(() => languages.id, { onDelete: "restrict" }),
+    description: text("description").notNull().default(""),
+    imageUrl: varchar("image_url", { length: 2048 }),
+    imageAlt: text("image_alt").notNull().default(""),
+    ...timestamps(),
+  },
+  (table) => [primaryKey({ columns: [table.programId, table.languageId] })]
+)
+
+// Bot preferences are available before a web account exists.
+export const telegramUserPreferences = pgTable("telegram_user_preferences", {
+  telegramId: bigint("telegram_id", { mode: "bigint" }).primaryKey(),
+  languageId: bigint("language_id", { mode: "bigint" })
+    .notNull()
+    .references(() => languages.id, { onDelete: "restrict" }),
+  ...timestamps(),
+})
+
+export const telegramSigninLinks = pgTable("telegram_signin_links", {
+  codeHash: text("code_hash").primaryKey(),
+  telegramId: bigint("telegram_id", { mode: "bigint" }).notNull(),
+  chatId: bigint("chat_id", { mode: "bigint" }).notNull(),
+  telegramUsername: varchar("telegram_username", { length: 32 }).notNull().default(""),
+  locale: varchar("locale", { length: 2 }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  consumedAt: timestamp("consumed_at", { withTimezone: true }),
+})
+
+// Existing workouts table (mapped for the outbox foreign key).
+export const workouts = pgTable("workouts", {
+  id: bigint("id", { mode: "bigint" }).primaryKey().generatedByDefaultAsIdentity(),
+  userId: bigint("user_id", { mode: "bigint" }).notNull().references(() => users.id, { onDelete: "cascade" }),
+  programDayId: bigint("program_day_id", { mode: "bigint" }),
+  scheduledAt: timestamp("scheduled_at", { withTimezone: true }),
+  completedAt: timestamp("completed_at", { withTimezone: true }),
+  ...timestamps(),
+})
+// Telegram group discovery, consent and transactional workout outbox.
+export const telegramChats = pgTable("telegram_chats", {
+  chatId: bigint("chat_id", { mode: "bigint" }).primaryKey(),
+  title: text("title").notNull(),
+  botUsername: varchar("bot_username", { length: 32 }),
+  chatType: text("chat_type").notNull(),
+  addedByTelegramId: bigint("added_by_telegram_id", { mode: "bigint" }).notNull(),
+  botIsAdmin: boolean("bot_is_admin").notNull().default(false),
+  active: boolean("active").notNull().default(false),
+  locale: varchar("locale", { length: 2 }).notNull().default("en"),
+  lastUpdateId: bigint("last_update_id", { mode: "bigint" }).notNull().default(BigInt(0)),
+  ...timestamps(),
+})
+export const telegramChatManagers = pgTable("telegram_chat_managers", {
+  chatId: bigint("chat_id", { mode: "bigint" }).notNull().references(() => telegramChats.chatId, { onDelete: "cascade" }),
+  telegramId: bigint("telegram_id", { mode: "bigint" }).notNull(),
+  isAdmin: boolean("is_admin").notNull().default(false),
+  verifiedAt: timestamp("verified_at", { withTimezone: true }).notNull().defaultNow(),
+}, t => [primaryKey({ columns: [t.chatId, t.telegramId] })])
+export const telegramWorkoutPreferences = pgTable("telegram_workout_preferences", {
+  userId: bigint("user_id", { mode: "bigint" }).primaryKey().references(() => users.id, { onDelete: "cascade" }),
+  privateEnabled: boolean("private_enabled").notNull().default(true),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+})
+export const telegramWorkoutSubscriptions = pgTable("telegram_workout_subscriptions", {
+  chatId: bigint("chat_id", { mode: "bigint" }).notNull().references(() => telegramChats.chatId, { onDelete: "cascade" }),
+  userId: bigint("user_id", { mode: "bigint" }).notNull().references(() => users.id, { onDelete: "cascade" }),
+  invitedByUserId: bigint("invited_by_user_id", { mode: "bigint" }).references(() => users.id, { onDelete: "set null" }),
+  status: text("status").notNull().default("pending"),
+  enabled: boolean("enabled").notNull().default(false),
+  ...timestamps(),
+}, t => [primaryKey({ columns: [t.chatId, t.userId] })])
+export const workoutTelegramMessages = pgTable("workout_telegram_messages", {
+  workoutId: bigint("workout_id", { mode: "bigint" }).notNull(),
+  chatId: bigint("chat_id", { mode: "bigint" }).notNull(),
+  deleteRequested: boolean("delete_requested").notNull().default(false),
+  deleteAttempts: integer("delete_attempts").notNull().default(0),
+  deleteNextAttemptAt: timestamp("delete_next_attempt_at", { withTimezone: true }).notNull().defaultNow(),
+  desiredRevision: uuid("desired_revision").notNull(),
+  deliveredRevision: uuid("delivered_revision"),
+  messageId: bigint("message_id", { mode: "bigint" }),
+  attempts: integer("attempts").notNull().default(0),
+  nextAttemptAt: timestamp("next_attempt_at", { withTimezone: true }).notNull().defaultNow(),
+  leaseId: uuid("lease_id"),
+  leaseUntil: timestamp("lease_until", { withTimezone: true }),
+  cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
+  lastError: text("last_error"),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, t => [primaryKey({ columns: [t.workoutId, t.chatId] })])
+
+export const telegramConnectionNotifications = pgTable("telegram_connection_notifications", {
+  chatId: bigint("chat_id", { mode: "bigint" }).notNull(),
+  updateId: bigint("update_id", { mode: "bigint" }).notNull(),
+  recipientId: bigint("recipient_id", { mode: "bigint" }).notNull(),
+  title: text("title").notNull(),
+  chatUsername: text("chat_username"),
+  locale: varchar("locale", { length: 2 }).notNull().default("en"),
+  active: boolean("active").notNull(),
+  attempts: integer("attempts").notNull().default(0),
+  nextAttemptAt: timestamp("next_attempt_at", { withTimezone: true }).notNull().defaultNow(),
+  deliveredAt: timestamp("delivered_at", { withTimezone: true }),
+}, t => [primaryKey({ columns: [t.chatId, t.updateId] })])

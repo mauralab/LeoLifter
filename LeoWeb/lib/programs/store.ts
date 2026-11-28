@@ -1,12 +1,18 @@
 import "server-only"
 import { createHash } from "node:crypto"
 import type { PoolClient, QueryResultRow } from "pg"
+import { ownsProgramImage } from "./files"
 import { getPool } from "@/lib/db"
 import type {
   CanvasBlock,
   CanvasKind,
 } from "@/components/programs/canvas-layout"
-import type { ProgramInput, SavedProgram } from "./validation"
+import type {
+  ProgramDescription,
+  ProgramInput,
+  ProgramSummary,
+  SavedProgram,
+} from "./validation"
 
 type Row = QueryResultRow & { id: string }
 type Node = {
@@ -93,8 +99,20 @@ async function read(c: PoolClient, id: string, userId: string) {
       [id]
     )
   ).rows[0]?.document as { nodes: Node[] } | undefined
+  const descriptionRows = (
+    await c.query(
+      "SELECT * FROM program_descriptions WHERE program_id=$1 ORDER BY language_id",
+      [id]
+    )
+  ).rows
+  const descriptions: ProgramDescription[] = descriptionRows.map((row) => ({
+    languageId: row.language_id,
+    description: row.description,
+    imageUrl: row.image_url ?? "",
+    imageAlt: row.image_alt,
+  }))
   const revision = createHash("sha256")
-    .update(JSON.stringify({ p, rows, doc }))
+    .update(JSON.stringify({ p, rows, doc, descriptionRows }))
     .digest("hex")
   const blocks: CanvasBlock[] = []
   const nodes: Node[] = []
@@ -178,7 +196,7 @@ async function read(c: PoolClient, id: string, userId: string) {
       const b = blocks.find((b) => b.id === parentId("cycle", r.id))!
       b.parentId = parentId("cycle", r.parent_cycle_id)
     }
-  return { id, name: p.name, revision, blocks, nodes, rows }
+  return { id, name: p.name, revision, blocks, nodes, rows, descriptions }
 }
 export async function loadProgram(
   id: string,
@@ -189,7 +207,13 @@ export async function loadProgram(
     await c.query("BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY")
     const p = await read(c, id, userId)
     await c.query("COMMIT")
-    return { id: p.id, name: p.name, revision: p.revision, blocks: p.blocks }
+    return {
+      id: p.id,
+      name: p.name,
+      revision: p.revision,
+      blocks: p.blocks,
+      descriptions: p.descriptions,
+    }
   } catch (e) {
     await c.query("ROLLBACK")
     throw e
@@ -197,13 +221,13 @@ export async function loadProgram(
     c.release()
   }
 }
-export async function listPrograms(userId: string) {
+export async function listPrograms(userId: string, locale = "en") {
   return (
     await getPool().query(
-      "SELECT id,name FROM programs WHERE author_id=$1 ORDER BY updated_at DESC,id DESC",
-      [userId]
+      `SELECT p.id,p.name,d.description,d.image_url AS "imageUrl",d.image_alt AS "imageAlt" FROM programs p LEFT JOIN LATERAL (SELECT d.* FROM program_descriptions d JOIN languages l ON l.id=d.language_id WHERE d.program_id=p.id AND (d.description<>'' OR d.image_url IS NOT NULL) ORDER BY CASE WHEN l.code=$2 THEN 0 WHEN l.code='en' THEN 1 ELSE 2 END,l.id LIMIT 1) d ON true WHERE p.author_id=$1 ORDER BY p.updated_at DESC,p.id DESC`,
+      [userId, locale]
     )
-  ).rows as { id: string; name: string }[]
+  ).rows as ProgramSummary[]
 }
 export async function saveProgram(
   input: ProgramInput,
@@ -240,6 +264,42 @@ export async function saveProgram(
       ).rows[0].id
     }
     const programId = id!
+    if (input.descriptions !== undefined) {
+      const languageIds = input.descriptions.map((row) => row.languageId)
+      if (
+        languageIds.length &&
+        (
+          await c.query("SELECT id FROM languages WHERE id=ANY($1::bigint[])", [
+            languageIds,
+          ])
+        ).rowCount !== languageIds.length
+      )
+        throw new ProgramError(
+          "A description language is no longer available.",
+          409
+        )
+      for (const description of input.descriptions)
+        if (
+          description.imageUrl &&
+          !(await ownsProgramImage(description.imageUrl, userId))
+        )
+          throw new ProgramError("Upload an image owned by your account.", 400)
+      await c.query("DELETE FROM program_descriptions WHERE program_id=$1", [
+        programId,
+      ])
+      for (const row of input.descriptions)
+        await c.query(
+          "INSERT INTO program_descriptions(program_id,language_id,description,image_url,image_alt) VALUES($1,$2,$3,$4,$5)",
+          [
+            programId,
+            row.languageId,
+            row.description,
+            row.imageUrl || null,
+            row.imageAlt,
+          ]
+        )
+    }
+
     const nodes: Node[] = []
     // Move existing positions out of the way of immediate unique indexes. The whole update is atomic.
     if (old)
@@ -370,6 +430,7 @@ export async function saveProgram(
       name: saved.name,
       revision: saved.revision,
       blocks: saved.blocks,
+      descriptions: saved.descriptions,
     }
   } catch (e) {
     await c.query("ROLLBACK")

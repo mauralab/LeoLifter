@@ -13,6 +13,7 @@ public class Program
     public long? AuthorId { get; set; }
     public bool IsPublic { get; set; }
     public User? Author { get; set; }
+    public ICollection<ProgramDescription> Descriptions { get; set; } = new List<ProgramDescription>();
     public ICollection<ProgramCycle> Cycles { get; set; } = new List<ProgramCycle>();
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;

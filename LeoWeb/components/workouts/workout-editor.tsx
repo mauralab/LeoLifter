@@ -1,5 +1,6 @@
 "use client"
 import {
+  useEffect,
   useRef,
   useState,
   useSyncExternalStore,
@@ -16,6 +17,9 @@ import {
   ListOrdered,
   Plus,
   Minus,
+  Save,
+  History,
+  FilePlus2,
   Settings2,
   Trash2,
   FilePenLine,
@@ -45,6 +49,9 @@ import {
   workoutTargetLabel,
   targetRange,
 } from "@/lib/workouts/program-template"
+import { WorkoutHistory } from "./workout-history"
+import type { SavedWorkout } from "@/lib/workouts/validation"
+import { workoutInstant } from "@/lib/workouts/schedule"
 import { WorkoutExport } from "./workout-export"
 import { ProgramDayPicker } from "./program-day-picker"
 
@@ -99,6 +106,16 @@ function cloneRows(rows: WorkoutSet[]) {
     return { ...s, id: crypto.randomUUID(), batchId: batches.get(s.batchId)! }
   })
 }
+const snapshotKey = (value: unknown) =>
+  JSON.stringify(value, (_key, item) =>
+    item && typeof item === "object" && !Array.isArray(item)
+      ? Object.fromEntries(
+          Object.keys(item)
+            .sort()
+            .map((key) => [key, item[key]])
+        )
+      : item
+  )
 const subscribeTimezone = () => () => {}
 const browserTimezone = () => Intl.DateTimeFormat().resolvedOptions().timeZone
 const serverTimezone = () => "UTC"
@@ -143,6 +160,16 @@ export function WorkoutEditor({
   const [notes, setNotes] = useState("")
   const [programPicker, setProgramPicker] = useState(false)
   const [source, setSource] = useState<WorkoutSource | null>(null)
+  const [historyOpen, setHistoryOpen] = useState(false)
+  const [savedIdentity, setSavedIdentity] = useState<{
+    id: string
+    revision: string
+  } | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState("")
+  const [savedSnapshot, setSavedSnapshot] = useState("")
+  const clientKey = useRef("")
+
   const [groups, setGroups] = useState<WorkoutGroup[]>([])
   const [exercises, setExercises] = useState<WorkoutExercise[]>([])
   const [selection, setSelection] = useState<Selection>({ kind: "day" })
@@ -169,6 +196,155 @@ export function WorkoutEditor({
       ? g.id === selection.id
       : g.id === activeExercise?.groupId
   )
+
+  const fingerprint = snapshotKey({
+    title,
+    date,
+    notes,
+    source,
+    groups,
+    exercises,
+  })
+  const dirty = savedSnapshot
+    ? fingerprint !== savedSnapshot
+    : !!(
+        groups.length ||
+        exercises.length ||
+        notes ||
+        customTitle ||
+        customDate
+      )
+  useEffect(() => {
+    if (!dirty) return
+    const warn = (event: BeforeUnloadEvent) => {
+      event.preventDefault()
+      event.returnValue = ""
+    }
+    window.addEventListener("beforeunload", warn)
+    return () => window.removeEventListener("beforeunload", warn)
+  }, [dirty])
+  async function saveWorkoutDraft() {
+    if (saving || !dirty) return
+    if (!signedIn) {
+      setSaveError(t.signInToSave)
+      return
+    }
+    setSaving(true)
+    setSaveError("")
+    const controller = new AbortController(),
+      timeout = setTimeout(() => controller.abort(), 30000)
+    try {
+      if (!clientKey.current) clientKey.current = crypto.randomUUID()
+      const body = {
+        clientKey: clientKey.current,
+        revision: savedIdentity?.revision,
+        title,
+        date,
+        scheduledAt: workoutInstant(date, preferredTimezone ?? browserZone),
+        notes,
+        source,
+        groups,
+        exercises,
+      }
+      const response = await fetch(
+        savedIdentity ? `/api/workouts/${savedIdentity.id}` : "/api/workouts",
+        {
+          method: savedIdentity ? "PUT" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+          signal: controller.signal,
+        }
+      )
+      if (!response.ok) {
+        const data = await response.json().catch(() => null)
+        throw new Error(
+          response.status === 401
+            ? t.signInToSave
+            : response.status === 409
+              ? t.workoutConflict
+              : response.status === 400
+                ? data?.error || t.saveWorkoutError
+                : t.saveWorkoutError
+        )
+      }
+      const saved: SavedWorkout = await response.json()
+      setSavedIdentity({ id: saved.id, revision: saved.revision })
+      setSavedSnapshot(
+        snapshotKey({
+          title: saved.draft.title,
+          date: saved.draft.date,
+          notes: saved.draft.notes,
+          source: saved.draft.source,
+          groups: saved.draft.groups,
+          exercises: saved.draft.exercises,
+        })
+      )
+      setNotice(t.workoutSaved)
+    } catch (error) {
+      setSaveError(
+        error instanceof Error && error.name !== "AbortError"
+          ? error.message
+          : t.saveWorkoutError
+      )
+    } finally {
+      clearTimeout(timeout)
+      setSaving(false)
+    }
+  }
+  function openSavedWorkout(item: SavedWorkout) {
+    if (dirty && !window.confirm(t.replaceUnsaved)) return
+    const d = item.draft
+    setTitle(d.title)
+    setDate(d.date)
+    setNotes(d.notes)
+    setSource(d.source)
+    setGroups(d.groups)
+    setExercises(d.exercises)
+    clientKey.current = d.clientKey
+    setSavedIdentity({ id: item.id, revision: item.revision })
+    setSavedSnapshot(
+      snapshotKey({
+        title: d.title,
+        date: d.date,
+        notes: d.notes,
+        source: d.source,
+        groups: d.groups,
+        exercises: d.exercises,
+      })
+    )
+    setSaveError("")
+    setSelection({ kind: "day" })
+    setHistoryOpen(false)
+    setNotice(t.workoutOpened)
+  }
+  function newWorkout() {
+    if (dirty && !window.confirm(t.replaceUnsaved)) return
+    const nextDate = workoutDateTime(
+      new Date().toISOString(),
+      preferredTimezone ?? browserZone
+    )
+    setTitle(null)
+    setDate(nextDate)
+    setNotes("")
+    setSource(null)
+    setGroups([])
+    setExercises([])
+    clientKey.current = ""
+    setSavedIdentity(null)
+    setSavedSnapshot(
+      snapshotKey({
+        title: workoutDefaultName(nextDate, primaryLocale, defaultNameTemplate),
+        date: nextDate,
+        notes: "",
+        source: null,
+        groups: [],
+        exercises: [],
+      })
+    )
+    setSaveError("")
+    setSelection({ kind: "day" })
+    setNotice("")
+  }
   function importDay(
     program: ProgramWorkoutTemplate,
     dayId: string,
@@ -756,12 +932,47 @@ export function WorkoutEditor({
             <h1>{t.editorTitle}</h1>
             <p>{t.intro}</p>
           </div>
-          <span className="workout-local-draft" title={t.localNote}>
+          <span
+            className="workout-local-draft"
+            role="status"
+            title={t.persistenceNote}
+          >
             <FilePenLine size={16} />
-            {t.localDraft}
+            {saving
+              ? t.savingWorkout
+              : savedIdentity && !dirty
+                ? t.workoutSaved
+                : dirty
+                  ? t.unsavedWorkout
+                  : t.newWorkout}
           </span>
         </div>
+        {saveError && (
+          <p className="workout-save-error" role="alert">
+            {saveError}
+          </p>
+        )}
         <div className="workout-toolbar" role="toolbar" aria-label={t.actions}>
+          <button
+            type="button"
+            disabled={saving || !dirty}
+            onClick={() => void saveWorkoutDraft()}
+          >
+            <Save size={16} />
+            {saving ? t.savingWorkout : t.saveWorkout}
+          </button>
+          <button
+            type="button"
+            disabled={saving || !signedIn}
+            onClick={() => setHistoryOpen(true)}
+          >
+            <History size={16} />
+            {t.savedWorkouts}
+          </button>
+          <button type="button" disabled={saving} onClick={newWorkout}>
+            <FilePlus2 size={16} />
+            {t.newWorkout}
+          </button>
           <WorkoutExport
             draft={{ username, date, title, groups, exercises, catalog }}
             copy={messages}
@@ -770,6 +981,12 @@ export function WorkoutEditor({
             <Layers3 size={16} />
             {t.fromProgram}
           </button>
+        </div>
+        <div
+          className="workout-toolbar workout-edit-toolbar"
+          role="toolbar"
+          aria-label={t.editActions}
+        >
           <button
             type="button"
             disabled={selection.kind === "day"}
@@ -1297,7 +1514,7 @@ export function WorkoutEditor({
         </div>
         <footer className="workout-footer">
           <FilePenLine size={15} />
-          {t.localNote}
+          {t.persistenceNote}
         </footer>
         <p className="sr-only" role="status" aria-live="polite">
           {notice}
@@ -1321,6 +1538,24 @@ export function WorkoutEditor({
               ? p.exercise
               : p.set}
         </div>
+      )}
+      {historyOpen && (
+        <WorkoutHistory
+          locale={locale}
+          initialDate={date}
+          copy={messages}
+          catalog={catalog}
+          onClose={() => setHistoryOpen(false)}
+          onEdit={openSavedWorkout}
+          onDeleted={(id) => {
+            if (savedIdentity?.id === id) {
+              setSavedIdentity(null)
+              clientKey.current = ""
+              setSavedSnapshot("")
+            }
+            setNotice(t.workoutDeleted)
+          }}
+        />
       )}
       {programPicker && (
         <ProgramDayPicker

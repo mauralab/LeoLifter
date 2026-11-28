@@ -1,3 +1,4 @@
+using LeoDatabase.Models.Telegram;
 using LeoDatabase.Models.Access;
 using LeoDatabase.Models.Localization;
 using LeoDatabase.Models.Personal;
@@ -25,12 +26,21 @@ public sealed class LeoDbContext(DbContextOptions<LeoDbContext> options) : DbCon
     public DbSet<UserRole> UserRoles => Set<UserRole>();
     public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
     public DbSet<UserPermission> UserPermissions => Set<UserPermission>();
+    public DbSet<TelegramConnectionNotification> TelegramConnectionNotifications => Set<TelegramConnectionNotification>();
+    public DbSet<TelegramChat> TelegramChats => Set<TelegramChat>();
+    public DbSet<TelegramChatManager> TelegramChatManagers => Set<TelegramChatManager>();
+    public DbSet<TelegramWorkoutPreference> TelegramWorkoutPreferences => Set<TelegramWorkoutPreference>();
+    public DbSet<TelegramWorkoutSubscription> TelegramWorkoutSubscriptions => Set<TelegramWorkoutSubscription>();
+    public DbSet<WorkoutTelegramMessage> WorkoutTelegramMessages => Set<WorkoutTelegramMessage>();
+    public DbSet<TelegramSignInLink> TelegramSignInLinks => Set<TelegramSignInLink>();
+    public DbSet<TelegramUserPreference> TelegramUserPreferences => Set<TelegramUserPreference>();
     public DbSet<Language> Languages => Set<Language>();
     public DbSet<ExerciseTranslation> ExerciseTranslations => Set<ExerciseTranslation>();
     public DbSet<ExerciseMedia> ExerciseMedia => Set<ExerciseMedia>();
     public DbSet<ExerciseMediaTranslation> ExerciseMediaTranslations => Set<ExerciseMediaTranslation>();
     public DbSet<Exercise> Exercises => Set<Exercise>();
     public DbSet<TrainingProgram> Programs => Set<TrainingProgram>();
+    public DbSet<ProgramDescription> ProgramDescriptions => Set<ProgramDescription>();
     public DbSet<ProgramCycle> ProgramCycles => Set<ProgramCycle>();
     public DbSet<ProgramDay> ProgramDays => Set<ProgramDay>();
     public DbSet<ProgramDayGroup> ProgramDayGroups => Set<ProgramDayGroup>();
@@ -45,8 +55,12 @@ public sealed class LeoDbContext(DbContextOptions<LeoDbContext> options) : DbCon
     {
         base.OnModelCreating(modelBuilder);
         UserConfiguration.Configure(modelBuilder);
+        TelegramUserPreferenceConfiguration.Configure(modelBuilder);
+        TelegramSignInLinkConfiguration.Configure(modelBuilder);
+        TelegramSharingConfiguration.Configure(modelBuilder);
         AccessConfiguration.Configure(modelBuilder);
         ProgramConfiguration.Configure(modelBuilder);
+        ProgramDescriptionConfiguration.Configure(modelBuilder);
         ExerciseLocalizationConfiguration.Configure(modelBuilder);
         WorkoutConfiguration.Configure(modelBuilder);
 

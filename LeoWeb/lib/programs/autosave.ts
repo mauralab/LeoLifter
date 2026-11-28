@@ -1,4 +1,10 @@
-import { blockInput, programInput, type SavedProgram } from "./validation"
+import {
+  blockInput,
+  programInput,
+  programDescriptionInput,
+  type ProgramDescription,
+  type SavedProgram,
+} from "./validation"
 import {
   targetError,
   parentKind,
@@ -7,9 +13,16 @@ import {
 } from "@/components/programs/canvas-layout"
 
 // Normalize defaults and object-key order so a server round trip does not schedule another save.
-export function normalizedDraft(name: string, blocks: CanvasBlock[]) {
+export function normalizedDraft(
+  name: string,
+  blocks: CanvasBlock[],
+  descriptions: ProgramDescription[] = []
+) {
   return {
     name: name.trim(),
+    descriptions: descriptions
+      .map((row) => programDescriptionInput.parse(row))
+      .sort((a, b) => (BigInt(a.languageId) < BigInt(b.languageId) ? -1 : 1)),
     blocks: blocks.map((b) =>
       blockInput.parse(
         b.kind === "set"
@@ -27,7 +40,8 @@ export function normalizedDraft(name: string, blocks: CanvasBlock[]) {
 export function saveableDraft(
   name: string,
   blocks: CanvasBlock[],
-  previous?: SavedProgram
+  previous?: SavedProgram,
+  descriptions?: ProgramDescription[]
 ) {
   const old = new Map(previous?.blocks.map((b) => [b.id, b]) ?? [])
   const candidate = new Map<string, CanvasBlock>()
@@ -69,6 +83,7 @@ export function saveableDraft(
   const parsed = programInput.safeParse({
     name: effectiveName,
     blocks: [...candidate.values()],
+    descriptions: descriptions ?? previous?.descriptions ?? [],
   })
   if (!parsed.success) return { draft: null, skipped: true }
   // Invalid hierarchy, duplicates and global limits remain blocked by the shared server validator.
@@ -76,7 +91,11 @@ export function saveableDraft(
     if (b.parentId && candidate.get(b.parentId)?.kind !== parentKind[b.kind])
       return { draft: null, skipped: true }
   return {
-    draft: normalizedDraft(parsed.data.name, parsed.data.blocks),
+    draft: normalizedDraft(
+      parsed.data.name,
+      parsed.data.blocks,
+      parsed.data.descriptions
+    ),
     skipped,
   }
 }

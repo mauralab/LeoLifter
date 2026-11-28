@@ -1,12 +1,16 @@
 "use client"
 import { useCallback, useEffect, useRef, useState } from "react"
 import type { CanvasBlock } from "./canvas-layout"
-import type { SavedProgram } from "@/lib/programs/validation"
+import type {
+  ProgramDescription,
+  SavedProgram,
+} from "@/lib/programs/validation"
 import { normalizedDraft, saveableDraft } from "@/lib/programs/autosave"
 
 export function useProgramAutosave({
   name,
   blocks,
+  descriptions,
   initialProgram,
   editing,
   locale,
@@ -14,6 +18,7 @@ export function useProgramAutosave({
 }: {
   name: string
   blocks: CanvasBlock[]
+  descriptions: ProgramDescription[]
   initialProgram?: SavedProgram
   editing: boolean
   locale: string
@@ -23,7 +28,11 @@ export function useProgramAutosave({
   const [savedSnapshot, setSavedSnapshot] = useState(
     initialProgram
       ? JSON.stringify(
-          normalizedDraft(initialProgram.name, initialProgram.blocks)
+          normalizedDraft(
+            initialProgram.name,
+            initialProgram.blocks,
+            initialProgram.descriptions
+          )
         )
       : ""
   )
@@ -39,7 +48,7 @@ export function useProgramAutosave({
   }, [])
   const inFlight = useRef(false),
     lastAttempt = useRef("")
-  const projected = saveableDraft(name, blocks, saved)
+  const projected = saveableDraft(name, blocks, saved, descriptions)
   const snapshot = projected.draft ? JSON.stringify(projected.draft) : ""
   const dirty = !!snapshot && snapshot !== savedSnapshot
   const save = useCallback(

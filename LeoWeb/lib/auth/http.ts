@@ -8,12 +8,16 @@ export function requestLocale(form: FormData) {
 }
 export function authFailure(error: unknown, locale: string) {
   const expected = error instanceof AuthError
-  if (!expected)
-    console.error(
-      error instanceof AuthConfigurationError
-        ? "Auth configuration is missing or invalid."
-        : "Auth database operation failed; check connectivity and migrations."
-    )
+  if (!expected) {
+    // Never log query text, parameters, credentials or complete exception messages.
+    const cause = error instanceof Error ? error.cause : undefined
+    const databaseCode = cause && typeof cause === "object" && "code" in cause ? String(cause.code) : undefined
+    console.error("Auth operation failed", {
+      kind: error instanceof AuthConfigurationError ? "configuration" : error instanceof Error ? error.name : "unknown",
+      databaseCode: databaseCode && /^[A-Z0-9]{5}$/.test(databaseCode) ? databaseCode : undefined,
+      location: error instanceof Error ? error.stack?.split("\n").filter(line => line.trim().startsWith("at ")).slice(0, 3).join("\n") : undefined,
+    })
+  }
   return privateRedirect(
     `/${locale}/auth/error?reason=${expected ? "invalid" : "unavailable"}`
   )

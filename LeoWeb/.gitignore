@@ -44,3 +44,6 @@ next-env.d.ts
 
 # Persistent exercise uploads (back up separately)
 .exercise-media/
+
+# Persistent program cover images (back up separately)
+.program-media/

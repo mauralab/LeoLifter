@@ -14,15 +14,17 @@ import {
   LockKeyhole,
   LogOut,
   Settings2,
+  Send,
   ShieldCheck,
   UserRound,
 } from "lucide-react"
+import { TelegramSharing } from "./telegram-sharing"
 import { TrainingNavigation } from "@/components/navigation/training-navigation"
 import { HeaderPreferences } from "@/components/landing/header-preferences"
 import { type Locale, type Messages, languages, locales } from "@/lib/i18n"
 import type { ProfileData } from "@/lib/profile/store"
 
-type Tab = "profile" | "settings" | "password" | "sessions"
+type Tab = "profile" | "settings" | "telegram" | "password" | "sessions"
 export function ProfileWorkspace({
   data,
   locale,
@@ -48,6 +50,7 @@ export function ProfileWorkspace({
   const tabs = [
     { key: "profile", icon: UserRound },
     { key: "settings", icon: Settings2 },
+    { key: "telegram", icon: Send },
     { key: "password", icon: LockKeyhole },
     { key: "sessions", icon: Laptop },
   ] as const
@@ -197,6 +200,7 @@ export function ProfileWorkspace({
                 <button
                   type="button"
                   key={key}
+                  title={t[key]}
                   aria-current={tab === key ? "page" : undefined}
                   disabled={busy}
                   onClick={() => {
@@ -206,7 +210,7 @@ export function ProfileWorkspace({
                     setInvalid([])
                   }}
                 >
-                  <Icon size={18} />
+                  <Icon size={21} strokeWidth={1.8} aria-hidden="true" />
                   <span>{t[key]}</span>
                   {key === "sessions" && (
                     <span className="account-count">{data.total}</span>
@@ -454,6 +458,10 @@ export function ProfileWorkspace({
                   </button>
                 </div>
               </form>
+
+            </section>
+            <section hidden={tab !== "telegram"} aria-label={t.telegram}>
+              {tab === "telegram" && <TelegramSharing messages={messages} />}
             </section>
             <section
               hidden={tab !== "password"}

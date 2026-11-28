@@ -1,3 +1,5 @@
+using LeoBot.Sharing;
+using LeoBot.Localization;
 using LeoBot.Authentication;
 using LeoBot.Configuration;
 using LeoBot.Handlers;
@@ -19,17 +21,23 @@ public static class DependencyInjection
                 "Set Telegram__BotToken to your BotFather token in environment variables.")
             .Validate(options => BotOptions.IsValidAuthUrl(options.WebAuthUrl),
                 "Telegram__WebAuthUrl must be # or an HTTPS auth URL without query/fragment (use HTTP 127.0.0.1 for local development; Telegram rejects localhost buttons).")
-            .Validate(options => !options.HasAuthUrl || System.Text.Encoding.UTF8.GetByteCount(options.AuthLinkSecret) >= 32,
-                "Set Telegram__AuthLinkSecret to the same 32-byte-or-longer secret as LeoWeb TELEGRAM_AUTH_SECRET.")
             .ValidateOnStart();
         services.AddSingleton<ITelegramBotClient>(provider =>
             new TelegramBotClient(provider.GetRequiredService<IOptions<BotOptions>>().Value.BotToken));
         services.AddSingleton(TimeProvider.System);
+        services.AddSingleton<TelegramSignInLinkStore>();
         services.AddSingleton<TelegramLoginLinkFactory>();
         services.AddSingleton<LandingMessageFactory>();
         services.AddSingleton<PasswordApprovalStore>();
         services.AddSingleton<PasswordApprovalService>();
+        services.AddSingleton<ITelegramLanguageStore, TelegramLanguageStore>();
+        services.AddSingleton<TelegramSharingStore>();
+        services.AddSingleton<TelegramGroupService>();
+        services.AddSingleton<WorkoutDeliveryService>();
+        services.AddSingleton<WorkoutCleanupService>();
+        services.AddSingleton<TelegramConnectionService>();
         services.AddSingleton<BotUpdateHandler>();
+        services.AddHostedService<WorkoutSharingWorker>();
         services.AddHostedService<PasswordApprovalWorker>();
         services.AddHostedService<BotWorker>();
         return services;

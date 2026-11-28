@@ -50,7 +50,7 @@ export default async function Page({ params }: Props) {
   const [exercises, languages, programs] = await Promise.all([
     exerciseList(),
     languageList(),
-    user ? listPrograms(user.userId) : Promise.resolve([]),
+    user ? listPrograms(user.userId,locale) : Promise.resolve([]),
   ])
   const local = languages.find((l) => l.code === locale)?.id,
     english = languages.find((l) => l.code === "en")?.id
